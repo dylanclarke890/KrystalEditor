@@ -3,6 +3,8 @@
 IF NOT EXIST .\build mkdir .\build
 pushd .\build
 
+IF NOT EXIST .\obj mkdir .\obj
+
 set editor_start_time=%time%
 echo Compiling 'Krystal Editor'.
 echo Started at%editor_start_time%.
@@ -36,16 +38,16 @@ Winmm.lib
 
 set editor_disabled_warnings= -wd4100 -wd4201
 
-set editor_compiler_flags=-nologo -Zi -Oi -FC -W4 -WX -MP -EHsc -std:c++latest
-set editor_linker_flags=-LIBPATH:"K:\build" %editor_linked_libs%
+set editor_compiler_flags=-c -Foobj\ -nologo -Zi -Oi -FC -W4 -WX -MP -EHsc -std:c++latest
+set editor_linker_flags=-nologo -LIBPATH:"K:\build" %editor_linked_libs%
 
 cl ^
 %editor_compiler_flags% ^
 %editor_include_directories% ^
 %editor_disabled_warnings% ^
-%editor_source_files% ^
-/link ^
-%editor_linker_flags%
+%editor_source_files%
+
+link %editor_linker_flags% .\obj\*.obj 
 
 popd
 
