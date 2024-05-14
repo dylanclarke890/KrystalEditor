@@ -8,7 +8,7 @@
 
 #include "KrystalEditor.h"
 
-#define TEST_ORTHO_CAMERA 0
+#define TEST_ORTHO_CAMERA 1
 
 namespace Krys
 {
@@ -33,9 +33,15 @@ namespace Krys
 
   void KrystalEditor::Update(float dt)
   {
+#if (TEST_ORTHO_CAMERA)
+    static auto size = Vec2(100.0f);
+    static auto pos = Vec3(100.0f, 100.0f, 0.0f);
+    static auto color = Vec4(0.5f, 0.5f, 0.5f, 1.0f);
+#else
     static auto size = Vec2(1.0f);
     static auto pos = Vec3(0.0f, 0.0f, 0.0f);
     static auto color = Vec4(0.5f, 0.5f, 0.5f, 1.0f);
+#endif
 
     Window->BeginFrame();
     Input::BeginFrame();
@@ -44,7 +50,7 @@ namespace Krys
       Renderer2D::BeginScene(Camera);
       {
         Context->Clear(ClearFlags::Color);
-        Renderer2D::DrawQuad(pos, size, color);
+        Renderer2D::DrawQuad(pos, size, color, 45.0f);
       }
       Renderer2D::EndScene();
     }

@@ -7,7 +7,7 @@ IF NOT EXIST .\obj mkdir .\obj
 
 set editor_start_time=%time%
 echo Compiling 'Krystal Editor'.
-echo Started at%editor_start_time%.
+echo Started at %editor_start_time%.
 
 set editor_defines=^
 -DKRYS_ENABLE_ASSERTS=1 ^
@@ -62,6 +62,6 @@ set editor_end_time=%time%
 set /A "editor_start_in_seconds=((%editor_start_time:~0,2%*3600)+(%editor_start_time:~3,2%*60)+%editor_start_time:~6,2%)"
 set /A "editor_end_in_seconds=((%editor_end_time:~0,2%*3600)+(%editor_end_time:~3,2%*60)+%editor_end_time:~6,2%)"
 set /A "editor_compilation_duration_in_seconds=%editor_end_in_seconds%-%editor_start_in_seconds%"
-echo Finished at%editor_end_time% (%editor_compilation_duration_in_seconds%s).
+echo Finished at %editor_end_time% (%editor_compilation_duration_in_seconds%s).
 
 exit /b %editor_compilation_error%
