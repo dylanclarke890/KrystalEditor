@@ -8,13 +8,11 @@
 
 #include "KrystalEditor.h"
 
-#define TEST_ORTHO_CAMERA 1
-
 namespace Krys
 {
   KrystalEditor::KrystalEditor()
       : Application("Krystal Editor", 1280, 720, 60.0f),
-        WireFrameMode(false) {}
+        WireFrameMode(false), UseOrthographicCamera(false) {}
 
   void KrystalEditor::Startup()
   {
@@ -22,31 +20,48 @@ namespace Krys
 
     Renderer2D::Init(Context);
     Window->SetEventCallback(KRYS_BIND_EVENT_FN(KrystalEditor::OnEvent));
+    SetCamera();
+  }
 
-#if (TEST_ORTHO_CAMERA)
-    Camera = CreateRef<OrthographicCamera>(Window->GetWidth(), Window->GetHeight());
-#else
-    Camera = CreateRef<PerspectiveCamera>(Window->GetWidth(), Window->GetHeight(), 45.0f);
-    Camera->SetPosition({0.0f, 0.0f, 1.0f});
-#endif
+  void KrystalEditor::SetCamera()
+  {
+    if (UseOrthographicCamera)
+    {
+      auto camera = CreateRef<OrthographicCamera>(Window->GetWidth(), Window->GetHeight());
+      Camera = camera;
+      CameraController = CreateRef<OrthographicCameraController>(camera);
+    }
+    else
+    {
+      auto camera = CreateRef<PerspectiveCamera>(Window->GetWidth(), Window->GetHeight(), 45.0f);
+      Camera = camera;
+      Camera->SetPosition({0.0f, 0.0f, 1.0f});
+      CameraController = CreateRef<PerspectiveCameraController>(camera);
+    }
   }
 
   void KrystalEditor::Update(float dt)
   {
-#if (TEST_ORTHO_CAMERA)
-    static auto size = Vec2(100.0f);
-    static auto pos = Vec3(100.0f, 100.0f, 0.0f);
-    static auto color = Vec4(0.5f, 0.5f, 0.5f, 1.0f);
-#else
-    static auto size = Vec2(1.0f);
-    static auto pos = Vec3(0.0f, 0.0f, 0.0f);
-    static auto color = Vec4(0.5f, 0.5f, 0.5f, 1.0f);
-#endif
+    Vec2 size;
+    Vec3 pos;
+    Vec4 color;
+    if (UseOrthographicCamera)
+    {
+      size = Vec2(100.0f);
+      pos = Vec3(100.0f, 100.0f, 0.0f);
+      color = Vec4(0.5f, 0.5f, 0.5f, 1.0f);
+    }
+    else
+    {
+      size = Vec2(1.0f);
+      pos = Vec3(0.0f, 0.0f, 0.0f);
+      color = Vec4(0.5f, 0.5f, 0.5f, 1.0f);
+    }
 
     Window->BeginFrame();
     Input::BeginFrame();
     {
-      Camera->OnUpdate(Time::GetDeltaSecs());
+      CameraController->OnUpdate(Time::GetDeltaSecs());
       Renderer2D::BeginScene(Camera);
       {
         Context->Clear(ClearFlags::Color);
@@ -60,7 +75,7 @@ namespace Krys
 
   void KrystalEditor::OnEvent(Event &event)
   {
-    Camera->OnEvent(event);
+    CameraController->OnEvent(event);
 
     EventDispatcher dispatcher(event);
     dispatcher.Dispatch<KeyPressedEvent>(KRYS_BIND_EVENT_FN(KrystalEditor::OnKeyPressEvent));
@@ -70,11 +85,30 @@ namespace Krys
 
   bool KrystalEditor::OnKeyPressEvent(KeyPressedEvent &event)
   {
-    if (event.Key == KeyCode::Space)
-    {
-      WireFrameMode = !WireFrameMode;
-      Context->SetWireframeModeEnabled(WireFrameMode);
+    switch (event.Key) {
+     case KeyCode::Space:
+      {
+       WireFrameMode = !WireFrameMode;
+       Context->SetWireframeModeEnabled(WireFrameMode);
+       break;
+     }
+     case KeyCode::O:
+     {
+       UseOrthographicCamera = true;
+       SetCamera();
+       break;
+     }
+     case KeyCode::P:
+     {
+       UseOrthographicCamera = false;
+       SetCamera();
+       break;
+     }
+     default:
+       break;
     }
+
+
 
     return false;
   }

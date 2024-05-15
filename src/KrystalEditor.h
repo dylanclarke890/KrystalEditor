@@ -1,5 +1,6 @@
 #include <Engine.h>
 #include <Application.h>
+#include <Misc/Controller.h>
 
 namespace Krys
 {
@@ -7,7 +8,8 @@ namespace Krys
   {
     private:
       Ref<Camera> Camera;
-      bool WireFrameMode;
+      Ref<Controller> CameraController;
+      bool WireFrameMode, UseOrthographicCamera;
 
     public:
       KrystalEditor();
@@ -19,6 +21,7 @@ namespace Krys
       void OnEvent(Event &event) override;
 
     private:
+      void SetCamera();
       bool OnKeyPressEvent(KeyPressedEvent &event);
       bool OnShutdownEvent(ShutdownEvent &event);
   };
