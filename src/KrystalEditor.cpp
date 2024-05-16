@@ -20,6 +20,10 @@ namespace Krys
 
     Renderer2D::Init(Context);
     Window->SetEventCallback(KRYS_BIND_EVENT_FN(KrystalEditor::OnEvent));
+
+    Context->SetDepthTestingEnabled(true);
+    Context->SetDepthTestFunc(DepthTestFunc::Less);
+
     SetCamera();
   }
 
@@ -36,12 +40,13 @@ namespace Krys
       auto camera = CreateRef<PerspectiveCamera>(Window->GetWidth(), Window->GetHeight(), 45.0f);
       Camera = camera;
       CameraController = CreateRef<PerspectiveCameraController>(camera);
+      camera->SetPosition(Vec3(0.0f, 0.0f, 3.0f));
     }
   }
 
   void KrystalEditor::Update(float dt)
   {
-    static auto texture = Context->CreateTexture2D("textures/container.jpg");
+    static auto texture = Context->CreateTexture2D("textures/wall.jpg");
     Vec3 quadPos1;
     Vec3 quadPos2;
     Vec2 quadSize;
@@ -71,7 +76,7 @@ namespace Krys
 
       quadPos2 = Vec3(4.5f, 0.0f, 0.0f);
       cubePos2 = Vec3(3.0f, 0.0f, 0.0f);
-      cubeSize = Vec3(1.0f);
+      cubeSize = Vec3(1.0f, 3.0f, 5.0f);
     }
 
     Window->BeginFrame();
@@ -104,30 +109,29 @@ namespace Krys
 
   bool KrystalEditor::OnKeyPressEvent(KeyPressedEvent &event)
   {
-    switch (event.Key) {
-     case KeyCode::Space:
-      {
-       WireFrameMode = !WireFrameMode;
-       Context->SetWireframeModeEnabled(WireFrameMode);
-       break;
-     }
-     case KeyCode::O:
-     {
-       UseOrthographicCamera = true;
-       SetCamera();
-       break;
-     }
-     case KeyCode::P:
-     {
-       UseOrthographicCamera = false;
-       SetCamera();
-       break;
-     }
-     default:
-       break;
+    switch (event.Key)
+    {
+    case KeyCode::Space:
+    {
+      WireFrameMode = !WireFrameMode;
+      Context->SetWireframeModeEnabled(WireFrameMode);
+      break;
     }
-
-
+    case KeyCode::O:
+    {
+      UseOrthographicCamera = true;
+      SetCamera();
+      break;
+    }
+    case KeyCode::P:
+    {
+      UseOrthographicCamera = false;
+      SetCamera();
+      break;
+    }
+    default:
+      break;
+    }
 
     return false;
   }
