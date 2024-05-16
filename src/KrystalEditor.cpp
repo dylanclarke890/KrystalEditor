@@ -35,27 +35,43 @@ namespace Krys
     {
       auto camera = CreateRef<PerspectiveCamera>(Window->GetWidth(), Window->GetHeight(), 45.0f);
       Camera = camera;
-      Camera->SetPosition({0.0f, 0.0f, 1.0f});
       CameraController = CreateRef<PerspectiveCameraController>(camera);
     }
   }
 
   void KrystalEditor::Update(float dt)
   {
-    Vec2 size;
-    Vec3 pos;
-    Vec4 color;
+    static auto texture = Context->CreateTexture2D("textures/container.jpg");
+    Vec3 quadPos1;
+    Vec3 quadPos2;
+    Vec2 quadSize;
+
+    Vec3 cubePos1;
+    Vec3 cubePos2;
+    Vec3 cubeSize;
+
+    Vec4 cubeColor = Vec4(1.0f, 1.0f, 1.0f, 1.0f);
+    Vec4 quadColor = Vec4(1.0f, 1.0f, 1.0f, 1.0f);
+
     if (UseOrthographicCamera)
     {
-      size = Vec2(100.0f);
-      pos = Vec3(100.0f, 100.0f, 0.0f);
-      color = Vec4(0.5f, 0.5f, 0.5f, 1.0f);
+      quadPos1 = Vec3(100.0f, 100.0f, 0.0f);
+      quadPos2 = Vec3(100.0f, 100.0f, 0.0f);
+      quadSize = Vec2(100.0f);
+
+      cubePos1 = Vec3(100.0f, 100.0f, -1.0f);
+      cubePos2 = Vec3(300.0f, 100.0f, 0.0f);
+      cubeSize = Vec3(100.0f);
     }
     else
     {
-      size = Vec2(1.0f);
-      pos = Vec3(0.0f, 0.0f, 0.0f);
-      color = Vec4(0.5f, 0.5f, 0.5f, 1.0f);
+      quadPos1 = Vec3(-1.5f, 0.0f, 0.0f);
+      cubePos1 = Vec3(0.0f, 0.0f, 0.0f);
+      quadSize = Vec2(1.0f);
+
+      quadPos2 = Vec3(4.5f, 0.0f, 0.0f);
+      cubePos2 = Vec3(3.0f, 0.0f, 0.0f);
+      cubeSize = Vec3(1.0f);
     }
 
     Window->BeginFrame();
@@ -64,8 +80,11 @@ namespace Krys
       CameraController->OnUpdate(Time::GetDeltaSecs());
       Renderer2D::BeginScene(Camera);
       {
-        Context->Clear(ClearFlags::Color);
-        Renderer2D::DrawQuad(pos, size, color, 45.0f);
+        Context->Clear(ClearFlags::Color | ClearFlags::Depth);
+        Renderer2D::DrawQuad(quadPos1, quadSize, quadColor);
+        Renderer2D::DrawQuad(quadPos2, quadSize, texture);
+        Renderer2D::DrawCube(cubePos1, cubeSize, cubeColor);
+        Renderer2D::DrawCube(cubePos2, cubeSize, texture);
       }
       Renderer2D::EndScene();
     }
