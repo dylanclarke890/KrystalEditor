@@ -1,6 +1,7 @@
 #include <Graphics/Renderer2D.h>
 #include <Graphics/Camera/Orthographic.h>
 #include <Graphics/Camera/Perspective.h>
+#include <Graphics/Colors.h>
 
 #include <Misc/Performance.h>
 #include <Misc/Time.h>
@@ -12,72 +13,38 @@ namespace Krys
 {
   KrystalEditor::KrystalEditor()
       : Application("Krystal Editor", 1280, 720, 60.0f),
-        WireFrameMode(false), UseOrthographicCamera(false) {}
+        WireFrameMode(false) {}
 
   void KrystalEditor::Startup()
   {
     Application::Startup();
 
     Renderer2D::Init(Context);
+    Renderer2D::SetLightSourceColor(Colors::White);
+
     Window->SetEventCallback(KRYS_BIND_EVENT_FN(KrystalEditor::OnEvent));
 
     Context->SetDepthTestingEnabled(true);
     Context->SetDepthTestFunc(DepthTestFunc::Less);
 
-    SetCamera();
-  }
-
-  void KrystalEditor::SetCamera()
-  {
-    if (UseOrthographicCamera)
-    {
-      auto camera = CreateRef<OrthographicCamera>(Window->GetWidth(), Window->GetHeight());
-      Camera = camera;
-      CameraController = CreateRef<OrthographicCameraController>(camera);
-    }
-    else
-    {
-      auto camera = CreateRef<PerspectiveCamera>(Window->GetWidth(), Window->GetHeight(), 45.0f);
-      Camera = camera;
-      CameraController = CreateRef<PerspectiveCameraController>(camera);
-      camera->SetPosition(Vec3(0.0f, 0.0f, 3.0f));
-    }
+    auto camera = CreateRef<PerspectiveCamera>(Window->GetWidth(), Window->GetHeight(), 45.0f);
+    Camera = camera;
+    CameraController = CreateRef<PerspectiveCameraController>(camera);
+    camera->SetPosition(Vec3(-2.0f, 1.8f, 6.0f));
+    camera->SetPitch(-5.0f);
+    camera->SetYaw(25.0f);
   }
 
   void KrystalEditor::Update(float dt)
   {
-    static auto texture = Context->CreateTexture2D("textures/wall.jpg");
-    Vec3 quadPos1;
-    Vec3 quadPos2;
-    Vec2 quadSize;
+    static auto lightSourcePosition = Vec3(1.0f, 3.0f, -1.0f);
+    static auto lightSourceSize = Vec3(1.0f, 1.0f, 1.0f);
 
-    Vec3 cubePos1;
-    Vec3 cubePos2;
-    Vec3 cubeSize;
+    static auto stagePosition = Vec3(3.0f, -0.5f, 0.0f);
+    static auto stageSize = Vec3(15.0f, 0.25f, 15.0f);
 
-    Vec4 cubeColor = Vec4(1.0f, 1.0f, 1.0f, 1.0f);
-    Vec4 quadColor = Vec4(1.0f, 1.0f, 1.0f, 1.0f);
-
-    if (UseOrthographicCamera)
-    {
-      quadPos1 = Vec3(100.0f, 100.0f, 0.0f);
-      quadPos2 = Vec3(100.0f, 100.0f, 0.0f);
-      quadSize = Vec2(100.0f);
-
-      cubePos1 = Vec3(100.0f, 100.0f, -1.0f);
-      cubePos2 = Vec3(300.0f, 100.0f, 0.0f);
-      cubeSize = Vec3(100.0f);
-    }
-    else
-    {
-      quadPos1 = Vec3(-1.5f, 0.0f, 0.0f);
-      cubePos1 = Vec3(0.0f, 0.0f, 0.0f);
-      quadSize = Vec2(1.0f);
-
-      quadPos2 = Vec3(4.5f, 0.0f, 0.0f);
-      cubePos2 = Vec3(3.0f, 0.0f, 0.0f);
-      cubeSize = Vec3(1.0f, 3.0f, 5.0f);
-    }
+    static auto objectPosition = Vec3(1.0f, 0.0f, 0.0f);
+    static auto objectSize = Vec3(1.0f, 1.0f, 1.0f);
 
     Window->BeginFrame();
     Input::BeginFrame();
@@ -86,10 +53,11 @@ namespace Krys
       Renderer2D::BeginScene(Camera);
       {
         Context->Clear(ClearFlags::Color | ClearFlags::Depth);
-        Renderer2D::DrawQuad(quadPos1, quadSize, quadColor);
-        Renderer2D::DrawQuad(quadPos2, quadSize, texture);
-        Renderer2D::DrawCube(cubePos1, cubeSize, cubeColor);
-        Renderer2D::DrawCube(cubePos2, cubeSize, texture);
+
+        Renderer2D::DrawCube(stagePosition, stageSize, Colors::Gray50);
+        Renderer2D::DrawCube(objectPosition, objectSize, Colors::Red);
+        
+        Renderer2D::DrawLightSourceCube(lightSourcePosition, lightSourceSize);
       }
       Renderer2D::EndScene();
     }
@@ -115,18 +83,6 @@ namespace Krys
     {
       WireFrameMode = !WireFrameMode;
       Context->SetWireframeModeEnabled(WireFrameMode);
-      break;
-    }
-    case KeyCode::O:
-    {
-      UseOrthographicCamera = true;
-      SetCamera();
-      break;
-    }
-    case KeyCode::P:
-    {
-      UseOrthographicCamera = false;
-      SetCamera();
       break;
     }
     default:

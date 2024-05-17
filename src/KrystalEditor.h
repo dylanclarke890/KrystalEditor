@@ -9,7 +9,7 @@ namespace Krys
     private:
       Ref<Camera> Camera;
       Ref<Controller> CameraController;
-      bool WireFrameMode, UseOrthographicCamera;
+      bool WireFrameMode;
 
     public:
       KrystalEditor();
@@ -21,7 +21,6 @@ namespace Krys
       void OnEvent(Event &event) override;
 
     private:
-      void SetCamera();
       bool OnKeyPressEvent(KeyPressedEvent &event);
       bool OnShutdownEvent(ShutdownEvent &event);
   };
