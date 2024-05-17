@@ -20,7 +20,6 @@ namespace Krys
     Application::Startup();
 
     Renderer2D::Init(Context);
-    Renderer2D::SetLightSourceColor(Colors::White);
 
     Window->SetEventCallback(KRYS_BIND_EVENT_FN(KrystalEditor::OnEvent));
 
@@ -30,9 +29,12 @@ namespace Krys
     auto camera = CreateRef<PerspectiveCamera>(Window->GetWidth(), Window->GetHeight(), 45.0f);
     Camera = camera;
     CameraController = CreateRef<PerspectiveCameraController>(camera);
+
     camera->SetPosition(Vec3(-2.0f, 1.8f, 6.0f));
     camera->SetPitch(-5.0f);
     camera->SetYaw(25.0f);
+
+    Renderer2D::SetLightSourceColor(Colors::White);
   }
 
   void KrystalEditor::Update(float dt)
@@ -55,8 +57,8 @@ namespace Krys
         Context->Clear(ClearFlags::Color | ClearFlags::Depth);
 
         Renderer2D::DrawCube(stagePosition, stageSize, Colors::Gray50);
-        Renderer2D::DrawCube(objectPosition, objectSize, Colors::Red);
-        
+        Renderer2D::DrawCube(objectPosition, objectSize, Colors::Coral);
+
         Renderer2D::DrawLightSourceCube(lightSourcePosition, lightSourceSize);
       }
       Renderer2D::EndScene();
