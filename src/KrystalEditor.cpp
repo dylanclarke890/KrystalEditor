@@ -11,7 +11,7 @@
 
 namespace Krys
 {
-  static auto lightSourcePosition = Vec3(1.0f, 3.0f, -1.0f);
+  static auto lightSourcePosition = Vec3(1.0f, 3.0f, -3.0f);
 
   KrystalEditor::KrystalEditor()
       : Application("Krystal Editor", 1280, 720, 60.0f),
@@ -36,11 +36,20 @@ namespace Krys
     camera->SetPitch(-5.0f);
     camera->SetYaw(25.0f);
 
-    Renderer2D::SetLightSourceColor(Colors::White);
+    Vec3 lightAmbient = {0.2f, 0.2f, 0.2f}; // darken diffuse light a bit
+    Vec3 lightDiffuse = {0.5f, 0.5f, 0.5f};
+    Vec3 lightSpecular = {1.0f, 1.0f, 1.0f};
     Renderer2D::SetLightSourcePosition(lightSourcePosition);
-    Renderer2D::SetLightSourceAmbientStrength(0.1f);
-    Renderer2D::SetLightSourceSpecularStrength(0.5f);
-    Renderer2D::SetLightSourceShineStrength(32);
+    Renderer2D::SetLightSourceAmbient(lightAmbient);
+    Renderer2D::SetLightSourceDiffuse(lightDiffuse);
+    Renderer2D::SetLightSourceSpecular(lightSpecular);
+
+    Vec3 materialDiffuse = {1.0f, 0.5f, 0.81f};
+    Vec3 materialSpecular = {0.5f, 0.5f, 0.5f};
+    Renderer2D::SetMaterialDiffuse(materialDiffuse);
+    Renderer2D::SetMaterialAmbient(materialDiffuse);
+    Renderer2D::SetMaterialSpecular(materialSpecular);
+    Renderer2D::SetMaterialShine(256.0f);
   }
 
   void KrystalEditor::Update(float dt)
@@ -61,7 +70,7 @@ namespace Krys
       {
         Context->Clear(ClearFlags::Color | ClearFlags::Depth);
 
-        Renderer2D::DrawCube(stagePosition, stageSize, Colors::Gray50);
+        Renderer2D::DrawCube(stagePosition, stageSize, Colors::White);
         Renderer2D::DrawCube(objectPosition, objectSize, Colors::Coral);
 
         Renderer2D::DrawLightSourceCube(lightSourcePosition, lightSourceSize);
