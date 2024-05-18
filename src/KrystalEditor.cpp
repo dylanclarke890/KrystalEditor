@@ -11,6 +11,8 @@
 
 namespace Krys
 {
+  static auto lightSourcePosition = Vec3(1.0f, 3.0f, -1.0f);
+
   KrystalEditor::KrystalEditor()
       : Application("Krystal Editor", 1280, 720, 60.0f),
         WireFrameMode(false) {}
@@ -35,11 +37,14 @@ namespace Krys
     camera->SetYaw(25.0f);
 
     Renderer2D::SetLightSourceColor(Colors::White);
+    Renderer2D::SetLightSourcePosition(lightSourcePosition);
+    Renderer2D::SetLightSourceAmbientStrength(0.1f);
+    Renderer2D::SetLightSourceSpecularStrength(0.5f);
+    Renderer2D::SetLightSourceShineStrength(32);
   }
 
   void KrystalEditor::Update(float dt)
   {
-    static auto lightSourcePosition = Vec3(1.0f, 3.0f, -1.0f);
     static auto lightSourceSize = Vec3(1.0f, 1.0f, 1.0f);
 
     static auto stagePosition = Vec3(3.0f, -0.5f, 0.0f);
