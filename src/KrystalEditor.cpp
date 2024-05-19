@@ -32,24 +32,22 @@ namespace Krys
     Camera = camera;
     CameraController = CreateRef<PerspectiveCameraController>(camera);
 
-    camera->SetPosition(Vec3(-2.0f, 1.8f, 6.0f));
-    camera->SetPitch(-5.0f);
+    camera->SetPosition(Vec3(-1.0f, 5.0f, 4.0f));
+    camera->SetPitch(-40.0f);
     camera->SetYaw(25.0f);
 
-    Vec3 lightAmbient = {0.2f, 0.2f, 0.2f}; // darken diffuse light a bit
-    Vec3 lightDiffuse = {0.5f, 0.5f, 0.5f};
-    Vec3 lightSpecular = {1.0f, 1.0f, 1.0f};
+    Vec3 lightAmbient = {0.25f, 0.25f, 0.25f};
+    Vec3 lightDiffuse = {0.4f, 0.4f, 0.4f};
+    Vec3 lightSpecular = {0.774597f, 0.774597f, 0.774597f};
     Renderer2D::SetLightSourcePosition(lightSourcePosition);
     Renderer2D::SetLightSourceAmbient(lightAmbient);
     Renderer2D::SetLightSourceDiffuse(lightDiffuse);
     Renderer2D::SetLightSourceSpecular(lightSpecular);
 
-    Vec3 materialDiffuse = {1.0f, 0.5f, 0.81f};
-    Vec3 materialSpecular = {0.5f, 0.5f, 0.5f};
-    Renderer2D::SetMaterialDiffuse(materialDiffuse);
-    Renderer2D::SetMaterialAmbient(materialDiffuse);
-    Renderer2D::SetMaterialSpecular(materialSpecular);
-    Renderer2D::SetMaterialShine(256.0f);
+    // Vec3 materialDiffuse = {1.0f, 0.5f, 0.31f};
+    // Vec3 materialSpecular = {0.5f, 0.5f, 0.5f};
+    // Renderer2D::SetMaterialSpecular(materialSpecular);
+    Renderer2D::SetMaterialShine(0.6f * 128);
   }
 
   void KrystalEditor::Update(float dt)
@@ -61,6 +59,8 @@ namespace Krys
 
     static auto objectPosition = Vec3(1.0f, 0.0f, 0.0f);
     static auto objectSize = Vec3(1.0f, 1.0f, 1.0f);
+    static auto objectTexture = Context->CreateTexture2D("textures/crate.png");
+    static auto objectSpecularTexture = Context->CreateTexture2D("textures/crate-spec.png");
 
     Window->BeginFrame();
     Input::BeginFrame();
@@ -71,7 +71,7 @@ namespace Krys
         Context->Clear(ClearFlags::Color | ClearFlags::Depth);
 
         Renderer2D::DrawCube(stagePosition, stageSize, Colors::White);
-        Renderer2D::DrawCube(objectPosition, objectSize, Colors::Coral);
+        Renderer2D::DrawCube(objectPosition, objectSize, objectTexture, objectSpecularTexture);
 
         Renderer2D::DrawLightSourceCube(lightSourcePosition, lightSourceSize);
       }
