@@ -11,7 +11,7 @@
 
 namespace Krys
 {
-  static auto lightSourcePosition = Vec3(1.0f, 3.0f, -3.0f);
+  static auto lightSourceTransform = CreateRef<Transform>(Vec3(1.0f, 5.0f, -3.0f), Vec3(1.0f, 1.0f, 1.0f));
 
   KrystalEditor::KrystalEditor()
       : Application("Krystal Editor", 1280, 720, 60.0f),
@@ -32,48 +32,38 @@ namespace Krys
     Camera = camera;
     CameraController = CreateRef<PerspectiveCameraController>(camera);
 
-    camera->SetPosition(Vec3(-1.0f, 5.0f, 4.0f));
-    camera->SetPitch(-40.0f);
     camera->SetYaw(25.0f);
+    camera->SetPitch(-40.0f);
+    camera->SetPosition(Vec3(-1.0f, 7.0f, 5.0f));
 
-    Vec3 lightAmbient = {0.25f, 0.25f, 0.25f};
-    Vec3 lightDiffuse = {0.4f, 0.4f, 0.4f};
-    Vec3 lightSpecular = {0.774597f, 0.774597f, 0.774597f};
-    Renderer2D::SetLightSourcePosition(lightSourcePosition);
-    Renderer2D::SetLightSourceAmbient(lightAmbient);
-    Renderer2D::SetLightSourceDiffuse(lightDiffuse);
-    Renderer2D::SetLightSourceSpecular(lightSpecular);
-
-    // Vec3 materialDiffuse = {1.0f, 0.5f, 0.31f};
-    // Vec3 materialSpecular = {0.5f, 0.5f, 0.5f};
-    // Renderer2D::SetMaterialSpecular(materialSpecular);
-    Renderer2D::SetMaterialShine(0.6f * 128);
+    Renderer2D::SetLightSourceAmbient({0.2f, 0.2f, 0.2f});
+    Renderer2D::SetLightSourceDiffuse({0.5f, 0.5f, 0.5f});
+    Renderer2D::SetLightSourceSpecular({1.0f, 1.0f, 1.0f});
+    Renderer2D::SetLightSourcePosition(lightSourceTransform->Position);
   }
 
   void KrystalEditor::Update(float dt)
   {
-    static auto lightSourceSize = Vec3(1.0f, 1.0f, 1.0f);
-
-    static auto stagePosition = Vec3(3.0f, -0.5f, 0.0f);
-    static auto stageSize = Vec3(15.0f, 0.25f, 15.0f);
-
-    static auto objectPosition = Vec3(1.0f, 0.0f, 0.0f);
-    static auto objectSize = Vec3(1.0f, 1.0f, 1.0f);
+    static auto stageTransform = CreateRef<Transform>(Vec3(3.0f, -0.5f, 0.0f), Vec3(15.0f, 0.25f, 15.0f));
+    static auto objectTransform = CreateRef<Transform>(Vec3(1.0f, 0.0f, 0.0f), Vec3(1.0f, 1.0f, 1.0f));
     static auto objectTexture = Context->CreateTexture2D("textures/crate.png");
-    static auto objectSpecularTexture = Context->CreateTexture2D("textures/crate-spec.png");
+    static auto objectSpecularTexture = Context->CreateTexture2D("textures/crate-specular.png");
+    static auto objectEmissionTexture = Context->CreateTexture2D("textures/crate-emission.png");
+    static auto objectMaterial = CreateRef<Material>(objectTexture, objectSpecularTexture, objectEmissionTexture);
+    objectMaterial->Shininess = 128.0f;
 
     Window->BeginFrame();
     Input::BeginFrame();
     {
+
       CameraController->OnUpdate(Time::GetDeltaSecs());
       Renderer2D::BeginScene(Camera);
       {
         Context->Clear(ClearFlags::Color | ClearFlags::Depth);
 
-        Renderer2D::DrawCube(stagePosition, stageSize, Colors::White);
-        Renderer2D::DrawCube(objectPosition, objectSize, objectTexture, objectSpecularTexture);
-
-        Renderer2D::DrawLightSourceCube(lightSourcePosition, lightSourceSize);
+        Renderer2D::DrawCube(stageTransform, Colors::Gray50);
+        Renderer2D::DrawCube(objectTransform, objectMaterial);
+        Renderer2D::DrawLightSourceCube(lightSourceTransform);
       }
       Renderer2D::EndScene();
     }
