@@ -20,7 +20,7 @@ set editor_include_directories=^
 /I "K:\src" ^
 /I "K:\src\Core" ^
 /I "K:\src\Platform" ^
-/I "K:\src\ThirdParty\Glad\include\glad" ^
+/I "K:\src\ThirdParty\assimp\include" ^
 /I "K:\src\ThirdParty\Glad\include" ^
 /I "K:\src\ThirdParty\glm" ^
 /I "K:\src\ThirdParty\stb"
@@ -31,6 +31,7 @@ B:\src\KrystalEditor.cpp
 
 set editor_linked_libs=^
 Krystal.lib ^
+assimp.lib ^
 user32.lib ^
 gdi32.lib ^
 OpenGL32.lib ^
@@ -39,7 +40,7 @@ Winmm.lib
 set editor_disabled_warnings= -wd4100 -wd4201
 
 set editor_compiler_flags=-c -Foobj\ -nologo -Zi -Oi -FC -W4 -WX -MP -EHsc -std:c++latest
-set editor_linker_flags=-nologo -DEBUG:FULL -OUT:"KrystalEditor.exe" -LIBPATH:"K:\build" %editor_linked_libs%
+set editor_linker_flags=-nologo -DEBUG:FULL -OUT:"KrystalEditor.exe" -LIBPATH:"K:\build" -LIBPATH:"K:\src\ThirdParty\assimp" %editor_linked_libs%
 
 cl ^
 %editor_compiler_flags% ^
