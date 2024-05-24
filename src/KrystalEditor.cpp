@@ -34,23 +34,44 @@ namespace Krys
     camera->SetPitch(-40.0f);
     camera->SetPosition(Vec3(-1.0f, 7.0f, 10.0f));
 
-    Renderer2D::SetLightSourceAmbient({0.2f, 0.2f, 0.2f});
-    Renderer2D::SetLightSourceDiffuse({0.5f, 0.5f, 0.5f});
-    Renderer2D::SetLightSourceSpecular({1.0f, 1.0f, 1.0f});
-    Renderer2D::SetLightSourceAttenuation(1.0f, 0.09f, 0.032f);
+    auto objectShader = Renderer2D::GetObjectShader();
+
+    objectShader->SetUniform("u_DirectionalLight.Enabled", true);
+    objectShader->SetUniform("u_DirectionalLight.Direction", Vec3(0.0f, -1.0f, 0.0f));
+    objectShader->SetUniform("u_DirectionalLight.Ambient", Vec3(0.5f));
+    objectShader->SetUniform("u_DirectionalLight.Diffuse", Vec3(0.5f));
+    objectShader->SetUniform("u_DirectionalLight.Specular", Vec3(1.0f));
+
+    objectShader->SetUniform("u_PointLight.Enabled", true);
+    objectShader->SetUniform("u_PointLight.Ambient", Vec3(0.5f));
+    objectShader->SetUniform("u_PointLight.Diffuse", Vec3(0.5f));
+    objectShader->SetUniform("u_PointLight.Specular", Vec3(1.0f));
+    objectShader->SetUniform("u_PointLight.Constant", 1.0f);
+    objectShader->SetUniform("u_PointLight.Linear", 0.09f);
+    objectShader->SetUniform("u_PointLight.Quadratic", 0.032f);
+
+    objectShader->SetUniform("u_SpotLight.Enabled", true);
+    objectShader->SetUniform("u_SpotLight.Ambient", Vec3(0.1f));
+    objectShader->SetUniform("u_SpotLight.Diffuse", Vec3(0.8f));
+    objectShader->SetUniform("u_SpotLight.Specular", Vec3(1.0f));
+    objectShader->SetUniform("u_SpotLight.Constant", 1.0f);
+    objectShader->SetUniform("u_SpotLight.Linear", 0.09f);
+    objectShader->SetUniform("u_SpotLight.Quadratic", 0.032f);
+    objectShader->SetUniform("u_SpotLight.InnerCutoff", glm::cos(glm::radians(12.5f)));
+    objectShader->SetUniform("u_SpotLight.OuterCutoff", glm::cos(glm::radians(17.5f)));
   }
 
   void KrystalEditor::Update(float dt)
   {
-    // static auto stageTransform = CreateRef<Transform>(Vec3(3.0f, -0.5f, 0.0f), Vec3(15.0f, 0.25f, 15.0f));
-    static auto objectTransform = CreateRef<Transform>(Vec3(0.0f, 0.0f, 0.0f), Vec3(1.0f, 1.0f, 1.0f));
+    static auto stageTransform = CreateRef<Transform>(Vec3(0.0f, 0.0f, 0.0f), Vec3(15.0f, 0.25f, 15.0f));
+    static auto objectTransform = CreateRef<Transform>(Vec3(2.0f, 1.0f, 0.0f), Vec3(1.0f, 1.0f, 1.0f));
     static auto objectTexture = Context->CreateTexture2D("textures/crate.png");
-    static auto objectSpecularTexture = Context->CreateTexture2D("textures/crate-specular.png");
+    static auto objectSpecularTexture = Context->CreateTexture2D("textures/crate-spec.png");
     static auto objectEmissionTexture = Context->CreateTexture2D("textures/crate-emission.png");
-    static auto objectMaterial = CreateRef<Material>(objectTexture, objectSpecularTexture, objectEmissionTexture);
-    objectMaterial->Shininess = 128.0f;
+    static auto objectMaterial = CreateRef<Material>(objectTexture, objectSpecularTexture);
+    objectMaterial->Shininess = 2.0f;
 
-    static auto lightSourceTransform = CreateRef<Transform>(Vec3(-0.2f, -1.0f, -0.3f), Vec3(1.0f, 1.0f, 1.0f));
+    static auto lightSourceTransform = CreateRef<Transform>(Vec3(0.0f, 1.0f, 0.0f), Vec3(0.2f));
     static auto lightMoveSpeed = 0.01f;
 
     Window->BeginFrame();
@@ -67,33 +88,20 @@ namespace Krys
       if (Input::IsKeyPressed(KeyCode::DownArrow))
         lightSourceTransform->Position.y -= lightMoveSpeed * dt;
 
-      Renderer2D::SetLightSourcePosition(Vec4(lightSourceTransform->Position, 0.0f));
+      auto objectShader = Renderer2D::GetObjectShader();
+      objectShader->SetUniform("u_PointLight.Position", lightSourceTransform->Position);
+
+      auto camera = reinterpret_cast<PerspectiveCamera *>(Camera.get());
+      objectShader->SetUniform("u_SpotLight.Position", camera->GetPosition());
+      objectShader->SetUniform("u_SpotLight.Direction", camera->GetFront());
 
       CameraController->OnUpdate(Time::GetDeltaSecs());
       Renderer2D::BeginScene(Camera);
       {
         Context->Clear(ClearFlags::Color | ClearFlags::Depth);
 
-        Vec3 cubePositions[] = {
-            Vec3(0.0f, 0.0f, 0.0f),
-            Vec3(2.0f, 5.0f, -15.0f),
-            Vec3(-1.5f, -2.2f, -2.5f),
-            Vec3(-3.8f, -2.0f, -12.3f),
-            Vec3(2.4f, -0.4f, -3.5f),
-            Vec3(-1.7f, 3.0f, -7.5f),
-            Vec3(1.3f, -2.0f, -2.5f),
-            Vec3(1.5f, 2.0f, -2.5f),
-            Vec3(1.5f, 0.2f, -1.5f),
-            Vec3(-1.3f, 1.0f, -1.5f)};
-
-        // Renderer2D::DrawCube(stageTransform, Colors::Gray50);
-        for (int i = 0; i < 10; i++)
-        {
-          objectTransform->Position = cubePositions[i];
-          float angle = 20.0f * i;
-          objectTransform->Rotation = Vec3(1.0f, 0.3f, 0.5f) * angle;
-          Renderer2D::DrawCube(objectTransform, objectMaterial);
-        }
+        Renderer2D::DrawCube(stageTransform, Colors::Gray50);
+        Renderer2D::DrawCube(objectTransform, objectMaterial);
 
         Renderer2D::DrawLightSourceCube(lightSourceTransform);
       }
