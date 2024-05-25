@@ -68,7 +68,7 @@ namespace Krys
     static auto objectTexture = Context->CreateTexture2D("textures/crate.png");
     static auto objectSpecularTexture = Context->CreateTexture2D("textures/crate-spec.png");
     static auto objectEmissionTexture = Context->CreateTexture2D("textures/crate-emission.png");
-    static auto objectMaterial = CreateRef<Mesh>(objectTexture, objectSpecularTexture);
+    static auto objectMaterial = CreateRef<Material>(objectTexture, objectSpecularTexture);
     objectMaterial->Shininess = 2.0f;
 
     static auto lightSourceTransform = CreateRef<Transform>(Vec3(0.0f, 1.0f, 0.0f), Vec3(0.2f));
