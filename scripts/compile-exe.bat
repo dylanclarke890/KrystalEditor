@@ -13,7 +13,8 @@ set editor_defines=^
 -DKRYS_ENABLE_ASSERTS=1 ^
 -DKRYS_ENABLE_LOGGING=1 ^
 -DKRYS_ENABLE_DEBUG_BREAK=1 ^
--DKRYS_ENABLE_PERFORMANCE_CHECKS=1
+-DKRYS_ENABLE_PERFORMANCE_CHECKS=1 ^
+-D_ITERATOR_DEBUG_LEVEL=2
 
 set editor_include_directories=^
 /I "B:\src" ^
@@ -31,7 +32,8 @@ B:\src\KrystalEditor.cpp
 
 set editor_linked_libs=^
 Krystal.lib ^
-assimp.lib ^
+zlibstaticd.lib ^
+assimpd.lib ^
 user32.lib ^
 gdi32.lib ^
 OpenGL32.lib ^
@@ -39,7 +41,7 @@ Winmm.lib
 
 set editor_disabled_warnings= -wd4100 -wd4201
 
-set editor_compiler_flags=-c -Foobj\ -nologo -Zi -Oi -FC -W4 -WX -MP -EHsc -std:c++latest
+set editor_compiler_flags=-c -Foobj\ -nologo -Zi -Oi -FC -W4 -WX -MP -EHsc -std:c++latest -MTd
 set editor_linker_flags=-nologo -DEBUG:FULL -OUT:"KrystalEditor.exe" -LIBPATH:"K:\build" -LIBPATH:"K:\src\ThirdParty\assimp" %editor_linked_libs%
 
 cl ^

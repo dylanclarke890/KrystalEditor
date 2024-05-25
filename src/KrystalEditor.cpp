@@ -25,6 +25,7 @@ namespace Krys
 
     Context->SetDepthTestingEnabled(true);
     Context->SetDepthTestFunc(DepthTestFunc::Less);
+    Context->SetClearColor({0.0f, 0.0f, 1.0f, 1.0f});
 
     auto camera = CreateRef<PerspectiveCamera>(Window->GetWidth(), Window->GetHeight(), 45.0f);
     Camera = camera;
@@ -34,37 +35,42 @@ namespace Krys
     camera->SetPitch(-40.0f);
     camera->SetPosition(Vec3(-1.0f, 7.0f, 10.0f));
 
-    auto objectShader = Renderer2D::GetObjectShader();
+    //   auto objectShader = Renderer2D::GetObjectShader();
 
-    objectShader->SetUniform("u_DirectionalLight.Enabled", true);
-    objectShader->SetUniform("u_DirectionalLight.Direction", Vec3(0.0f, -1.0f, 0.0f));
-    objectShader->SetUniform("u_DirectionalLight.Ambient", Vec3(0.5f));
-    objectShader->SetUniform("u_DirectionalLight.Diffuse", Vec3(0.5f));
-    objectShader->SetUniform("u_DirectionalLight.Specular", Vec3(1.0f));
+    //   objectShader->SetUniform("u_DirectionalLight.Enabled", true);
+    //   objectShader->SetUniform("u_DirectionalLight.Direction", Vec3(0.0f, -1.0f, 0.0f));
+    //   objectShader->SetUniform("u_DirectionalLight.Ambient", Vec3(0.5f));
+    //   objectShader->SetUniform("u_DirectionalLight.Diffuse", Vec3(0.5f));
+    //   objectShader->SetUniform("u_DirectionalLight.Specular", Vec3(1.0f));
 
-    objectShader->SetUniform("u_PointLight.Enabled", true);
-    objectShader->SetUniform("u_PointLight.Ambient", Vec3(0.5f));
-    objectShader->SetUniform("u_PointLight.Diffuse", Vec3(0.5f));
-    objectShader->SetUniform("u_PointLight.Specular", Vec3(1.0f));
-    objectShader->SetUniform("u_PointLight.Constant", 1.0f);
-    objectShader->SetUniform("u_PointLight.Linear", 0.09f);
-    objectShader->SetUniform("u_PointLight.Quadratic", 0.032f);
+    //   objectShader->SetUniform("u_PointLight.Enabled", true);
+    //   objectShader->SetUniform("u_PointLight.Ambient", Vec3(0.5f));
+    //   objectShader->SetUniform("u_PointLight.Diffuse", Vec3(0.5f));
+    //   objectShader->SetUniform("u_PointLight.Specular", Vec3(1.0f));
+    //   objectShader->SetUniform("u_PointLight.Constant", 1.0f);
+    //   objectShader->SetUniform("u_PointLight.Linear", 0.09f);
+    //   objectShader->SetUniform("u_PointLight.Quadratic", 0.032f);
 
-    objectShader->SetUniform("u_SpotLight.Enabled", true);
-    objectShader->SetUniform("u_SpotLight.Ambient", Vec3(0.1f));
-    objectShader->SetUniform("u_SpotLight.Diffuse", Vec3(0.8f));
-    objectShader->SetUniform("u_SpotLight.Specular", Vec3(1.0f));
-    objectShader->SetUniform("u_SpotLight.Constant", 1.0f);
-    objectShader->SetUniform("u_SpotLight.Linear", 0.09f);
-    objectShader->SetUniform("u_SpotLight.Quadratic", 0.032f);
-    objectShader->SetUniform("u_SpotLight.InnerCutoff", glm::cos(glm::radians(12.5f)));
-    objectShader->SetUniform("u_SpotLight.OuterCutoff", glm::cos(glm::radians(17.5f)));
+    //   objectShader->SetUniform("u_SpotLight.Enabled", true);
+    //   objectShader->SetUniform("u_SpotLight.Ambient", Vec3(0.1f));
+    //   objectShader->SetUniform("u_SpotLight.Diffuse", Vec3(0.8f));
+    //   objectShader->SetUniform("u_SpotLight.Specular", Vec3(1.0f));
+    //   objectShader->SetUniform("u_SpotLight.Constant", 1.0f);
+    //   objectShader->SetUniform("u_SpotLight.Linear", 0.09f);
+    //   objectShader->SetUniform("u_SpotLight.Quadratic", 0.032f);
+    //   objectShader->SetUniform("u_SpotLight.InnerCutoff", glm::cos(glm::radians(12.5f)));
+    //   objectShader->SetUniform("u_SpotLight.OuterCutoff", glm::cos(glm::radians(17.5f)));
+
+    TestModel = CreateRef<Model>("models/backpack/backpack.obj");
+    TestShader = Context->CreateShader();
+    TestShader->Load("shaders/test-model.vert", "shaders/test-model.frag");
+    TestShader->Link();
   }
 
   void KrystalEditor::Update(float dt)
   {
     static auto stageTransform = CreateRef<Transform>(Vec3(0.0f, 0.0f, 0.0f), Vec3(15.0f, 0.25f, 15.0f));
-    static auto objectTransform = CreateRef<Transform>(Vec3(2.0f, 1.0f, 0.0f), Vec3(1.0f, 1.0f, 1.0f));
+    static auto objectTransform = CreateRef<Transform>(Vec3(0.0f, 0.0f, 0.0f), Vec3(1.0f, 1.0f, 1.0f));
     static auto objectTexture = Context->CreateTexture2D("textures/crate.png");
     static auto objectSpecularTexture = Context->CreateTexture2D("textures/crate-spec.png");
     static auto objectEmissionTexture = Context->CreateTexture2D("textures/crate-emission.png");
@@ -79,33 +85,37 @@ namespace Krys
     {
       KRYS_PERFORMANCE_TIMER("Update");
 
-      if (Input::IsKeyPressed(KeyCode::LeftArrow))
-        lightSourceTransform->Position.x -= lightMoveSpeed * dt;
-      if (Input::IsKeyPressed(KeyCode::RightArrow))
-        lightSourceTransform->Position.x += lightMoveSpeed * dt;
-      if (Input::IsKeyPressed(KeyCode::UpArrow))
-        lightSourceTransform->Position.y += lightMoveSpeed * dt;
-      if (Input::IsKeyPressed(KeyCode::DownArrow))
-        lightSourceTransform->Position.y -= lightMoveSpeed * dt;
+      TestShader->Bind();
+      TestShader->SetUniform("u_ViewProjection", Camera->GetViewProjection());
+      TestShader->SetUniform("u_Model", objectTransform->GetModel());
+      TestModel->Draw(TestShader);
+      // if (Input::IsKeyPressed(KeyCode::LeftArrow))
+      //   lightSourceTransform->Position.x -= lightMoveSpeed * dt;
+      // if (Input::IsKeyPressed(KeyCode::RightArrow))
+      //   lightSourceTransform->Position.x += lightMoveSpeed * dt;
+      // if (Input::IsKeyPressed(KeyCode::UpArrow))
+      //   lightSourceTransform->Position.y += lightMoveSpeed * dt;
+      // if (Input::IsKeyPressed(KeyCode::DownArrow))
+      //   lightSourceTransform->Position.y -= lightMoveSpeed * dt;
 
-      auto objectShader = Renderer2D::GetObjectShader();
-      objectShader->SetUniform("u_PointLight.Position", lightSourceTransform->Position);
+      // auto objectShader = Renderer2D::GetObjectShader();
+      // objectShader->SetUniform("u_PointLight.Position", lightSourceTransform->Position);
 
-      auto camera = reinterpret_cast<PerspectiveCamera *>(Camera.get());
-      objectShader->SetUniform("u_SpotLight.Position", camera->GetPosition());
-      objectShader->SetUniform("u_SpotLight.Direction", camera->GetFront());
+      // auto camera = reinterpret_cast<PerspectiveCamera *>(Camera.get());
+      // objectShader->SetUniform("u_SpotLight.Position", camera->GetPosition());
+      // objectShader->SetUniform("u_SpotLight.Direction", camera->GetFront());
 
       CameraController->OnUpdate(Time::GetDeltaSecs());
-      Renderer2D::BeginScene(Camera);
-      {
-        Context->Clear(ClearFlags::Color | ClearFlags::Depth);
+      // Renderer2D::BeginScene(Camera);
+      // {
+      //   Context->Clear(ClearFlags::Color | ClearFlags::Depth);
 
-        Renderer2D::DrawCube(stageTransform, Colors::Gray50);
-        Renderer2D::DrawCube(objectTransform, objectMaterial);
+      //   Renderer2D::DrawCube(stageTransform, Colors::Gray50);
+      //   Renderer2D::DrawCube(objectTransform, objectMaterial);
 
-        Renderer2D::DrawLightSourceCube(lightSourceTransform);
-      }
-      Renderer2D::EndScene();
+      //   Renderer2D::DrawLightSourceCube(lightSourceTransform);
+      // }
+      // Renderer2D::EndScene();
     }
     Input::EndFrame();
     Window->EndFrame();

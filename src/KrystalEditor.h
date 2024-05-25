@@ -1,6 +1,7 @@
 #include <Engine.h>
 #include <Application.h>
 #include <Misc/Controller.h>
+#include <Graphics/Model.h>
 
 namespace Krys
 {
@@ -10,6 +11,8 @@ namespace Krys
       Ref<Camera> Camera;
       Ref<Controller> CameraController;
       bool WireFrameMode;
+      Ref<Model> TestModel;
+      Ref<Shader> TestShader;
 
     public:
       KrystalEditor();
