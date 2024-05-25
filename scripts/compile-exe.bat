@@ -41,7 +41,7 @@ Winmm.lib
 
 set editor_disabled_warnings= -wd4100 -wd4201
 
-set editor_compiler_flags=-c -Foobj\ -nologo -Zi -Oi -FC -W4 -WX -MP -EHsc -std:c++latest -MTd
+set editor_compiler_flags=-c -Foobj\ -nologo -Zi -Oi -O2 -FC -W4 -WX -MP -EHsc -std:c++latest -MTd
 set editor_linker_flags=-nologo -DEBUG:FULL -OUT:"KrystalEditor.exe" -LIBPATH:"K:\build" -LIBPATH:"K:\src\ThirdParty\assimp" %editor_linked_libs%
 
 cl ^

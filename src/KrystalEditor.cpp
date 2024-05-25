@@ -83,12 +83,14 @@ namespace Krys
     Window->BeginFrame();
     Input::BeginFrame();
     {
-      KRYS_PERFORMANCE_TIMER("Update");
+      // KRYS_PERFORMANCE_TIMER("Update");
+      Context->Clear(ClearFlags::Color | ClearFlags::Depth);
 
       TestShader->Bind();
       TestShader->SetUniform("u_ViewProjection", Camera->GetViewProjection());
       TestShader->SetUniform("u_Model", objectTransform->GetModel());
       TestModel->Draw(TestShader);
+
       // if (Input::IsKeyPressed(KeyCode::LeftArrow))
       //   lightSourceTransform->Position.x -= lightMoveSpeed * dt;
       // if (Input::IsKeyPressed(KeyCode::RightArrow))
@@ -108,7 +110,6 @@ namespace Krys
       CameraController->OnUpdate(Time::GetDeltaSecs());
       // Renderer2D::BeginScene(Camera);
       // {
-      //   Context->Clear(ClearFlags::Color | ClearFlags::Depth);
 
       //   Renderer2D::DrawCube(stageTransform, Colors::Gray50);
       //   Renderer2D::DrawCube(objectTransform, objectMaterial);
