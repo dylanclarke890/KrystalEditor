@@ -65,6 +65,14 @@ namespace Krys
     TestShader = Context->CreateShader();
     TestShader->Load("shaders/test-model.vert", "shaders/test-model.frag");
     TestShader->Link();
+
+    TestShader->SetUniform("u_PointLight.Enabled", true);
+    TestShader->SetUniform("u_PointLight.Ambient", Vec3(0.5f));
+    TestShader->SetUniform("u_PointLight.Diffuse", Vec3(0.5f));
+    TestShader->SetUniform("u_PointLight.Specular", Vec3(1.0f));
+    TestShader->SetUniform("u_PointLight.Constant", 1.0f);
+    TestShader->SetUniform("u_PointLight.Linear", 0.09f);
+    TestShader->SetUniform("u_PointLight.Quadratic", 0.032f);
   }
 
   void KrystalEditor::Update(float dt)
@@ -87,36 +95,38 @@ namespace Krys
       Context->Clear(ClearFlags::Color | ClearFlags::Depth);
 
       TestShader->Bind();
+      TestShader->SetUniform("u_CameraPosition", Camera->GetPosition());
       TestShader->SetUniform("u_ViewProjection", Camera->GetViewProjection());
       TestShader->SetUniform("u_Model", objectTransform->GetModel());
-      TestModel->Draw(TestShader);
 
-      // if (Input::IsKeyPressed(KeyCode::LeftArrow))
-      //   lightSourceTransform->Position.x -= lightMoveSpeed * dt;
-      // if (Input::IsKeyPressed(KeyCode::RightArrow))
-      //   lightSourceTransform->Position.x += lightMoveSpeed * dt;
-      // if (Input::IsKeyPressed(KeyCode::UpArrow))
-      //   lightSourceTransform->Position.y += lightMoveSpeed * dt;
-      // if (Input::IsKeyPressed(KeyCode::DownArrow))
-      //   lightSourceTransform->Position.y -= lightMoveSpeed * dt;
+      if (Input::IsKeyPressed(KeyCode::LeftArrow))
+        lightSourceTransform->Position.x -= lightMoveSpeed * dt;
+      if (Input::IsKeyPressed(KeyCode::RightArrow))
+        lightSourceTransform->Position.x += lightMoveSpeed * dt;
+      if (Input::IsKeyPressed(KeyCode::UpArrow))
+        lightSourceTransform->Position.y += lightMoveSpeed * dt;
+      if (Input::IsKeyPressed(KeyCode::DownArrow))
+        lightSourceTransform->Position.y -= lightMoveSpeed * dt;
 
       // auto objectShader = Renderer2D::GetObjectShader();
-      // objectShader->SetUniform("u_PointLight.Position", lightSourceTransform->Position);
+      TestShader->SetUniform("u_PointLight.Position", lightSourceTransform->Position);
+
+      TestModel->Draw(TestShader);
 
       // auto camera = reinterpret_cast<PerspectiveCamera *>(Camera.get());
       // objectShader->SetUniform("u_SpotLight.Position", camera->GetPosition());
       // objectShader->SetUniform("u_SpotLight.Direction", camera->GetFront());
 
       CameraController->OnUpdate(Time::GetDeltaSecs());
-      // Renderer2D::BeginScene(Camera);
-      // {
+      Renderer2D::BeginScene(Camera);
+      {
 
-      //   Renderer2D::DrawCube(stageTransform, Colors::Gray50);
-      //   Renderer2D::DrawCube(objectTransform, objectMaterial);
+        // Renderer2D::DrawCube(stageTransform, Colors::Gray50);
+        //   Renderer2D::DrawCube(objectTransform, objectMaterial);
 
-      //   Renderer2D::DrawLightSourceCube(lightSourceTransform);
-      // }
-      // Renderer2D::EndScene();
+        Renderer2D::DrawLightSourceCube(lightSourceTransform);
+      }
+      Renderer2D::EndScene();
     }
     Input::EndFrame();
     Window->EndFrame();
