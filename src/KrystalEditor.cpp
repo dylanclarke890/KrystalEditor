@@ -67,7 +67,7 @@ namespace Krys
   void KrystalEditor::Update(float dt)
   {
     static auto stageTransform = CreateRef<Transform>(Vec3(0.0f, 0.0f, 0.0f), Vec3(15.0f, 0.25f, 15.0f));
-    static auto objectTransform = CreateRef<Transform>(Vec3(0.0f, 0.0f, 0.0f), Vec3(1.0f, 1.0f, 1.0f));
+    static auto objectTransform = CreateRef<Transform>(Vec3(0.0f, 0.54f, 0.0f), Vec3(1.0f, 1.0f, 1.0f));
     static auto objectTexture = Context->CreateTexture2D("textures/crate.png");
     static auto objectSpecularTexture = Context->CreateTexture2D("textures/crate-spec.png");
     static auto objectEmissionTexture = Context->CreateTexture2D("textures/crate-emission.png");
@@ -97,7 +97,15 @@ namespace Krys
       Renderer2D::BeginScene(Camera);
       {
         Renderer2D::DrawCube(stageTransform, Colors::Gray50);
-        Renderer2D::DrawCube(objectTransform, objectMaterial);
+        for (float i = 0.0f; i < 20.0f; i++)
+        {
+          objectTransform->Position.x = (i * 0.75f) - ((stageTransform->Size.x - objectTransform->Size.x) / 2.0f);
+          for (float j = 0.0f; j < 20.0f; j++)
+          {
+            objectTransform->Position.z = (j * 0.75f) - ((stageTransform->Size.z - objectTransform->Size.z) / 2.0f);
+            Renderer2D::DrawQuad(objectTransform, objectMaterial);
+          }
+        }
       }
       Renderer2D::EndScene();
     }
