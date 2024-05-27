@@ -35,8 +35,6 @@ namespace Krys
     camera->SetPitch(-40.0f);
     camera->SetPosition(Vec3(-1.0f, 7.0f, 10.0f));
 
-    //   auto objectShader = Renderer2D::GetObjectShader();
-
     //   objectShader->SetUniform("u_DirectionalLight.Enabled", true);
     //   objectShader->SetUniform("u_DirectionalLight.Direction", Vec3(0.0f, -1.0f, 0.0f));
     //   objectShader->SetUniform("u_DirectionalLight.Ambient", Vec3(0.5f));
@@ -61,18 +59,9 @@ namespace Krys
     //   objectShader->SetUniform("u_SpotLight.InnerCutoff", glm::cos(glm::radians(12.5f)));
     //   objectShader->SetUniform("u_SpotLight.OuterCutoff", glm::cos(glm::radians(17.5f)));
 
-    // TestModel = CreateRef<Model>("models/backpack/backpack.obj");
     TestShader = Context->CreateShader();
-    TestShader->Load("shaders/light-source.vert", "shaders/single-color.frag");
+    TestShader->Load("shaders/light-source.vert", "shaders/light-source.frag");
     TestShader->Link();
-
-    // TestShader->SetUniform("u_PointLight.Enabled", true);
-    // TestShader->SetUniform("u_PointLight.Ambient", Vec3(0.5f));
-    // TestShader->SetUniform("u_PointLight.Diffuse", Vec3(0.5f));
-    // TestShader->SetUniform("u_PointLight.Specular", Vec3(1.0f));
-    // TestShader->SetUniform("u_PointLight.Constant", 1.0f);
-    // TestShader->SetUniform("u_PointLight.Linear", 0.09f);
-    // TestShader->SetUniform("u_PointLight.Quadratic", 0.032f);
   }
 
   void KrystalEditor::Update(float dt)
@@ -82,8 +71,8 @@ namespace Krys
     static auto objectTexture = Context->CreateTexture2D("textures/crate.png");
     static auto objectSpecularTexture = Context->CreateTexture2D("textures/crate-spec.png");
     static auto objectEmissionTexture = Context->CreateTexture2D("textures/crate-emission.png");
-    static auto objectMaterial = CreateRef<Material>(objectTexture, objectSpecularTexture);
-    objectMaterial->Shininess = 2.0f;
+    static auto grassTexture = Context->CreateTexture2D("textures/grass.png");
+    static auto objectMaterial = CreateRef<Material>(grassTexture);
 
     static auto lightSourceTransform = CreateRef<Transform>(Vec3(0.0f, 1.0f, 0.0f), Vec3(0.2f));
     static auto lightMoveSpeed = 0.01f;
@@ -94,11 +83,6 @@ namespace Krys
       // KRYS_PERFORMANCE_TIMER("Update");
       Context->Clear(ClearFlags::Color | ClearFlags::Depth | ClearFlags::Stencil);
 
-      TestShader->Bind();
-      TestShader->TrySetUniform("u_CameraPosition", Camera->GetPosition());
-      TestShader->TrySetUniform("u_ViewProjection", Camera->GetViewProjection());
-      TestShader->TrySetUniform("u_Model", objectTransform->GetModel());
-
       if (Input::IsKeyPressed(KeyCode::LeftArrow))
         lightSourceTransform->Position.x -= lightMoveSpeed * dt;
       if (Input::IsKeyPressed(KeyCode::RightArrow))
@@ -108,41 +92,14 @@ namespace Krys
       if (Input::IsKeyPressed(KeyCode::DownArrow))
         lightSourceTransform->Position.y -= lightMoveSpeed * dt;
 
-      // auto objectShader = Renderer2D::GetObjectShader();
-      TestShader->TrySetUniform("u_PointLight.Position", lightSourceTransform->Position);
-      // TestModel->Draw(TestShader);
-
-      // auto camera = reinterpret_cast<PerspectiveCamera *>(Camera.get());
-      // objectShader->SetUniform("u_SpotLight.Position", camera->GetPosition());
-      // objectShader->SetUniform("u_SpotLight.Direction", camera->GetFront());
-
       CameraController->OnUpdate(Time::GetDeltaSecs());
-      Context->SetStencilOperation(StencilOperation::Keep, StencilOperation::Keep, StencilOperation::Replace);
-      Context->SetStencilTestFunc(StencilTestFunc::Always, 1, 0xFF);
-      Context->SetStencilBufferWritingEnabled(true);
 
       Renderer2D::BeginScene(Camera);
       {
-        objectTransform->Size = Vec3(1.0f);
-        Renderer2D::DrawLightSourceCube(objectTransform);
+        Renderer2D::DrawCube(stageTransform, Colors::Gray50);
+        Renderer2D::DrawCube(objectTransform, objectMaterial);
       }
       Renderer2D::EndScene();
-
-      // Cube outline
-      Context->SetStencilTestFunc(StencilTestFunc::Equal, 1, 0xFF);
-      Context->SetStencilBufferWritingEnabled(false);
-      Context->SetDepthTestingEnabled(false);
-
-      Renderer2D::BeginScene(Camera, TestShader);
-      {
-        objectTransform->Size = Vec3(0.9f);
-        Renderer2D::DrawLightSourceCube(objectTransform);
-      }
-      Renderer2D::EndScene();
-
-      Context->SetDepthTestingEnabled(true);
-      Context->SetStencilBufferWritingEnabled(true);
-      Context->SetStencilTestFunc(StencilTestFunc::Always, 1, 0xFF);
     }
     Input::EndFrame();
     Window->EndFrame();
