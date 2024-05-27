@@ -25,7 +25,10 @@ namespace Krys
 
     Context->SetDepthTestingEnabled(true);
     Context->SetStencilTestingEnabled(true);
+    Context->SetBlendingEnabled(true);
+
     Context->SetDepthTestFunc(DepthTestFunc::Less);
+    Context->SetBlendFunc(BlendFactor::SourceAlpha, BlendFactor::OneMinusSourceAlpha);
 
     auto camera = CreateRef<PerspectiveCamera>(Window->GetWidth(), Window->GetHeight(), 45.0f);
     Camera = camera;
@@ -66,16 +69,18 @@ namespace Krys
 
   void KrystalEditor::Update(float dt)
   {
-    static auto stageTransform = CreateRef<Transform>(Vec3(0.0f, 0.0f, 0.0f), Vec3(15.0f, 0.25f, 15.0f));
-    static auto objectTransform = CreateRef<Transform>(Vec3(0.0f, 0.54f, 0.0f), Vec3(1.0f, 1.0f, 1.0f));
     static auto objectTexture = Context->CreateTexture2D("textures/crate.png");
     static auto objectSpecularTexture = Context->CreateTexture2D("textures/crate-spec.png");
     static auto objectEmissionTexture = Context->CreateTexture2D("textures/crate-emission.png");
     static auto grassTexture = Context->CreateTexture2D("textures/grass.png");
-    static auto objectMaterial = CreateRef<Material>(grassTexture);
+    grassTexture->SetTextureWrapModes(TextureWrapMode::ClampToEdge, TextureWrapMode::ClampToEdge);
+    static auto windowTexture = Context->CreateTexture2D("textures/blending_transparent_window.png");
 
+    static auto stageTransform = CreateRef<Transform>(Vec3(0.0f, -0.25f, 0.0f), Vec3(15.0f, 0.25f, 15.0f));
+    static auto objectTransform = CreateRef<Transform>(Vec3(0.0f, 0.54f, 0.0f), Vec3(1.0f, 1.0f, 1.0f));
     static auto lightSourceTransform = CreateRef<Transform>(Vec3(0.0f, 1.0f, 0.0f), Vec3(0.2f));
-    static auto lightMoveSpeed = 0.01f;
+
+    static auto objectMaterial = CreateRef<Material>(windowTexture);
 
     Window->BeginFrame();
     Input::BeginFrame();
@@ -83,6 +88,7 @@ namespace Krys
       // KRYS_PERFORMANCE_TIMER("Update");
       Context->Clear(ClearFlags::Color | ClearFlags::Depth | ClearFlags::Stencil);
 
+      static auto lightMoveSpeed = 0.01f;
       if (Input::IsKeyPressed(KeyCode::LeftArrow))
         lightSourceTransform->Position.x -= lightMoveSpeed * dt;
       if (Input::IsKeyPressed(KeyCode::RightArrow))
@@ -97,15 +103,24 @@ namespace Krys
       Renderer2D::BeginScene(Camera);
       {
         Renderer2D::DrawCube(stageTransform, Colors::Gray50);
-        for (float i = 0.0f; i < 20.0f; i++)
-        {
-          objectTransform->Position.x = (i * 0.75f) - ((stageTransform->Size.x - objectTransform->Size.x) / 2.0f);
-          for (float j = 0.0f; j < 20.0f; j++)
-          {
-            objectTransform->Position.z = (j * 0.75f) - ((stageTransform->Size.z - objectTransform->Size.z) / 2.0f);
-            Renderer2D::DrawQuad(objectTransform, objectMaterial);
-          }
-        }
+        // for (float i = 0.0f; i < 20.0f; i++)
+        // {
+        //   objectTransform->Position.x = (i * 0.75f) - ((stageTransform->Size.x - objectTransform->Size.x) / 2.0f);
+        //   for (float j = 0.0f; j < 20.0f; j++)
+        //   {
+        //     objectTransform->Position.z = (j * 0.75f) - ((stageTransform->Size.z - objectTransform->Size.z) / 2.0f);
+        //     Renderer2D::DrawQuad(objectTransform, objectMaterial);
+        //   }
+        // }
+
+        objectTransform->Position.z = 0.0f;
+        Renderer2D::DrawCube(objectTransform, Colors::Coral);
+        objectTransform->Position.z = 2.0f;
+        objectTransform->Position.x = 0.5f;
+        Renderer2D::DrawQuad(objectTransform, objectMaterial);
+        objectTransform->Position.x = 0.0f;
+        objectTransform->Position.z = 1.0f;
+        Renderer2D::DrawQuad(objectTransform, objectMaterial);
       }
       Renderer2D::EndScene();
     }
