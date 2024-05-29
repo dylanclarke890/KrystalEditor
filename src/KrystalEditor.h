@@ -2,6 +2,7 @@
 #include <Application.h>
 #include <Misc/Controller.h>
 #include <Graphics/Model.h>
+#include <Graphics/Framebuffer.h>
 
 namespace Krys
 {
@@ -13,6 +14,7 @@ namespace Krys
       bool WireFrameMode;
       Ref<Model> TestModel;
       Ref<Shader> TestShader;
+      Ref<Framebuffer> TestFramebuffer;
 
     public:
       KrystalEditor();

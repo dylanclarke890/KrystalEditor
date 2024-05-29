@@ -65,6 +65,10 @@ namespace Krys
     TestShader = Context->CreateShader();
     TestShader->Load("shaders/light-source.vert", "shaders/light-source.frag");
     TestShader->Link();
+
+    TestFramebuffer = Context->CreateFramebuffer();
+    TestFramebuffer->AddColorAttachment(Window->GetWidth(), Window->GetHeight());
+    TestFramebuffer->AddDepthStencilAttachment(Window->GetWidth(), Window->GetHeight());
   }
 
   void KrystalEditor::Update(float dt)
@@ -86,7 +90,9 @@ namespace Krys
     Input::BeginFrame();
     {
       // KRYS_PERFORMANCE_TIMER("Update");
-      Context->Clear(ClearFlags::Color | ClearFlags::Depth | ClearFlags::Stencil);
+      // TestFramebuffer->Bind();
+      // Context->SetDepthTestingEnabled(true);
+      Context->Clear(ClearFlags::Color | ClearFlags::Depth);
 
       static auto lightMoveSpeed = 0.01f;
       if (Input::IsKeyPressed(KeyCode::LeftArrow))
@@ -124,6 +130,10 @@ namespace Krys
       }
       Renderer2D::EndScene();
     }
+
+    // TestFramebuffer->Unbind();
+    // Context->SetDepthTestingEnabled(false);
+
     Input::EndFrame();
     Window->EndFrame();
   }
