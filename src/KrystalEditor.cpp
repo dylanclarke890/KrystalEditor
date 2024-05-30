@@ -85,13 +85,14 @@ namespace Krys
     static auto lightSourceTransform = CreateRef<Transform>(Vec3(0.0f, 1.0f, 0.0f), Vec3(0.2f));
 
     static auto objectMaterial = CreateRef<Material>(windowTexture);
+    static auto frameBufferMaterial = CreateRef<Material>(TestFramebuffer->GetColorAttachment());
 
     Window->BeginFrame();
     Input::BeginFrame();
     {
       // KRYS_PERFORMANCE_TIMER("Update");
-      // TestFramebuffer->Bind();
-      // Context->SetDepthTestingEnabled(true);
+      TestFramebuffer->Bind();
+      Context->SetDepthTestingEnabled(true);
       Context->Clear(ClearFlags::Color | ClearFlags::Depth);
 
       static auto lightMoveSpeed = 0.01f;
@@ -129,11 +130,17 @@ namespace Krys
         Renderer2D::DrawQuad(objectTransform, objectMaterial);
       }
       Renderer2D::EndScene();
+
+      TestFramebuffer->Unbind();
+      Context->Clear(ClearFlags::Color);
+      Context->SetDepthTestingEnabled(false);
+
+      Renderer2D::BeginScene(Camera);
+      {
+        Renderer2D::DrawQuad(objectTransform, frameBufferMaterial);
+      }
+      Renderer2D::EndScene();
     }
-
-    // TestFramebuffer->Unbind();
-    // Context->SetDepthTestingEnabled(false);
-
     Input::EndFrame();
     Window->EndFrame();
   }
