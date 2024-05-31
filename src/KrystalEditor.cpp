@@ -81,7 +81,8 @@ namespace Krys
     static auto windowTexture = Context->CreateTexture2D("textures/blending_transparent_window.png");
 
     static auto stageTransform = CreateRef<Transform>(Vec3(0.0f, -0.25f, 0.0f), Vec3(15.0f, 0.25f, 15.0f));
-    static auto objectTransform = CreateRef<Transform>(Vec3(0.0f, 0.54f, 0.0f), Vec3(1.0f, 1.0f, 1.0f));
+    static auto objectTransform = CreateRef<Transform>(Vec3(0.0f, 0.54f, 0.0f), Vec3(1.0f));
+    static auto frameBufferTargetTransform = CreateRef<Transform>(Vec3(-1.0f, 7.0f, 9.0f), Vec3(1.0f));
     static auto lightSourceTransform = CreateRef<Transform>(Vec3(0.0f, 1.0f, 0.0f), Vec3(0.2f));
 
     static auto objectMaterial = CreateRef<Material>(windowTexture);
@@ -137,7 +138,10 @@ namespace Krys
 
       Renderer2D::BeginScene(Camera);
       {
-        Renderer2D::DrawQuad(objectTransform, frameBufferMaterial);
+        frameBufferTargetTransform->Size = Vec3(1.2f);
+        Renderer2D::DrawQuad(frameBufferTargetTransform, Colors::Red);
+        frameBufferTargetTransform->Size = Vec3(1.0f);
+        Renderer2D::DrawQuad(frameBufferTargetTransform, frameBufferMaterial);
       }
       Renderer2D::EndScene();
     }
