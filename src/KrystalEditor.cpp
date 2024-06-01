@@ -136,12 +136,12 @@ namespace Krys
   void KrystalEditor::Update(float dt)
   {
     static std::vector<std::string> faces = {
-        "cubemaps/skybox/right.jpg",
-        "cubemaps/skybox/left.jpg",
-        "cubemaps/skybox/top.jpg",
-        "cubemaps/skybox/bottom.jpg",
-        "cubemaps/skybox/front.jpg",
-        "cubemaps/skybox/back.jpg"};
+        "cubemaps/space-skybox/right.png",
+        "cubemaps/space-skybox/left.png",
+        "cubemaps/space-skybox/top.png",
+        "cubemaps/space-skybox/bottom.png",
+        "cubemaps/space-skybox/front.png",
+        "cubemaps/space-skybox/back.png"};
     static auto skyboxTexture = Context->CreateTextureCubemap(faces);
 
     static auto objectTexture = Context->CreateTexture2D("textures/crate.png");
