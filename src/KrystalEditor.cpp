@@ -63,8 +63,13 @@ namespace Krys
     //   objectShader->SetUniform("u_SpotLight.OuterCutoff", glm::cos(glm::radians(17.5f)));
 
     TestShader = Context->CreateShader();
-    TestShader->Load("shaders/light-source.vert", "shaders/light-source.frag");
+    TestShader->Load("shaders/renderer-2d.vert", "shaders/scene-texture.frag");
     TestShader->Link();
+
+    int samplers[REN2D_MAX_TEXTURE_SLOTS]{};
+    for (uint32_t i = 0; i < REN2D_MAX_TEXTURE_SLOTS; i++)
+      samplers[i] = i;
+    TestShader->SetUniform("u_Textures", samplers, REN2D_MAX_TEXTURE_SLOTS);
 
     TestFramebuffer = Context->CreateFramebuffer();
     TestFramebuffer->AddColorAttachment(Window->GetWidth(), Window->GetHeight());
@@ -85,7 +90,8 @@ namespace Krys
     static auto frameBufferTargetTransform = CreateRef<Transform>(Vec3(-1.0f, 7.0f, 9.0f), Vec3(1.0f));
     static auto lightSourceTransform = CreateRef<Transform>(Vec3(0.0f, 1.0f, 0.0f), Vec3(0.2f));
 
-    static auto objectMaterial = CreateRef<Material>(windowTexture);
+    static auto objectMaterial = CreateRef<Material>(objectTexture);
+    static auto windowMaterial = CreateRef<Material>(windowTexture);
     static auto frameBufferMaterial = CreateRef<Material>(TestFramebuffer->GetColorAttachment());
 
     Window->BeginFrame();
@@ -122,13 +128,13 @@ namespace Krys
         // }
 
         objectTransform->Position.z = 0.0f;
-        Renderer2D::DrawCube(objectTransform, Colors::Coral);
+        Renderer2D::DrawCube(objectTransform, objectMaterial);
         objectTransform->Position.z = 2.0f;
         objectTransform->Position.x = 0.5f;
-        Renderer2D::DrawQuad(objectTransform, objectMaterial);
+        Renderer2D::DrawQuad(objectTransform, windowMaterial);
         objectTransform->Position.x = 0.0f;
         objectTransform->Position.z = 1.0f;
-        Renderer2D::DrawQuad(objectTransform, objectMaterial);
+        Renderer2D::DrawQuad(objectTransform, windowMaterial);
       }
       Renderer2D::EndScene();
 
@@ -136,7 +142,7 @@ namespace Krys
       Context->Clear(ClearFlags::Color);
       Context->SetDepthTestingEnabled(false);
 
-      Renderer2D::BeginScene(Camera);
+      Renderer2D::BeginScene(Camera, TestShader);
       {
         frameBufferTargetTransform->Size = Vec3(1.2f);
         Renderer2D::DrawQuad(frameBufferTargetTransform, Colors::Red);
