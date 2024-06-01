@@ -16,6 +16,11 @@ namespace Krys
       Ref<Shader> TestShader;
       Ref<Framebuffer> TestFramebuffer;
 
+      Ref<Shader> SkyboxShader;
+      Ref<VertexArray> SkyboxVAO;
+      Ref<VertexBuffer> SkyboxVBO;
+      Ref<IndexBuffer> SkyboxEBO;
+
     public:
       KrystalEditor();
 

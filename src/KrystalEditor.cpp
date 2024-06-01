@@ -74,59 +74,96 @@ namespace Krys
     TestFramebuffer = Context->CreateFramebuffer();
     TestFramebuffer->AddColorAttachment(Window->GetWidth(), Window->GetHeight());
     TestFramebuffer->AddDepthStencilAttachment(Window->GetWidth(), Window->GetHeight());
+
+    float skyboxVertices[] = {
+        // positions
+        -1.0f, 1.0f, -1.0f,
+        -1.0f, -1.0f, -1.0f,
+        1.0f, -1.0f, -1.0f,
+        1.0f, -1.0f, -1.0f,
+        1.0f, 1.0f, -1.0f,
+        -1.0f, 1.0f, -1.0f,
+
+        -1.0f, -1.0f, 1.0f,
+        -1.0f, -1.0f, -1.0f,
+        -1.0f, 1.0f, -1.0f,
+        -1.0f, 1.0f, -1.0f,
+        -1.0f, 1.0f, 1.0f,
+        -1.0f, -1.0f, 1.0f,
+
+        1.0f, -1.0f, -1.0f,
+        1.0f, -1.0f, 1.0f,
+        1.0f, 1.0f, 1.0f,
+        1.0f, 1.0f, 1.0f,
+        1.0f, 1.0f, -1.0f,
+        1.0f, -1.0f, -1.0f,
+
+        -1.0f, -1.0f, 1.0f,
+        -1.0f, 1.0f, 1.0f,
+        1.0f, 1.0f, 1.0f,
+        1.0f, 1.0f, 1.0f,
+        1.0f, -1.0f, 1.0f,
+        -1.0f, -1.0f, 1.0f,
+
+        -1.0f, 1.0f, -1.0f,
+        1.0f, 1.0f, -1.0f,
+        1.0f, 1.0f, 1.0f,
+        1.0f, 1.0f, 1.0f,
+        -1.0f, 1.0f, 1.0f,
+        -1.0f, 1.0f, -1.0f,
+
+        -1.0f, -1.0f, -1.0f,
+        -1.0f, -1.0f, 1.0f,
+        1.0f, -1.0f, -1.0f,
+        1.0f, -1.0f, -1.0f,
+        -1.0f, -1.0f, 1.0f,
+        1.0f, -1.0f, 1.0f};
+    uint32 skyboxIndices[36] = {};
+    for (uint i = 0; i < 36; i++)
+      skyboxIndices[i] = i;
+    SkyboxVAO = Context->CreateVertexArray();
+    SkyboxVBO = Context->CreateVertexBuffer(skyboxVertices, sizeof(skyboxVertices));
+    SkyboxVBO->SetLayout(BufferLayout(sizeof(skyboxVertices), {{ShaderDataType::Float3, "a_Position"}}));
+    SkyboxEBO = Context->CreateIndexBuffer(skyboxIndices, 36);
+
+    SkyboxVAO->AddVertexBuffer(SkyboxVBO);
+    SkyboxVAO->SetIndexBuffer(SkyboxEBO);
+
+    SkyboxShader = Context->CreateShader();
+    SkyboxShader->Load("shaders/skybox.vert", "shaders/skybox.frag");
+    SkyboxShader->Link();
   }
 
   void KrystalEditor::Update(float dt)
   {
+    static std::vector<std::string> faces = {
+        "cubemaps/skybox/right.jpg",
+        "cubemaps/skybox/left.jpg",
+        "cubemaps/skybox/top.jpg",
+        "cubemaps/skybox/bottom.jpg",
+        "cubemaps/skybox/front.jpg",
+        "cubemaps/skybox/back.jpg"};
+    static auto skyboxTexture = Context->CreateTextureCubemap(faces);
+
     static auto objectTexture = Context->CreateTexture2D("textures/crate.png");
-    static auto objectSpecularTexture = Context->CreateTexture2D("textures/crate-spec.png");
-    static auto objectEmissionTexture = Context->CreateTexture2D("textures/crate-emission.png");
-    static auto grassTexture = Context->CreateTexture2D("textures/grass.png");
-    grassTexture->SetTextureWrapModes(TextureWrapMode::ClampToEdge, TextureWrapMode::ClampToEdge);
     static auto windowTexture = Context->CreateTexture2D("textures/blending_transparent_window.png");
 
     static auto stageTransform = CreateRef<Transform>(Vec3(0.0f, -0.25f, 0.0f), Vec3(15.0f, 0.25f, 15.0f));
     static auto objectTransform = CreateRef<Transform>(Vec3(0.0f, 0.54f, 0.0f), Vec3(1.0f));
-    static auto frameBufferTargetTransform = CreateRef<Transform>(Vec3(-1.0f, 7.0f, 9.0f), Vec3(1.0f));
-    static auto lightSourceTransform = CreateRef<Transform>(Vec3(0.0f, 1.0f, 0.0f), Vec3(0.2f));
 
     static auto objectMaterial = CreateRef<Material>(objectTexture);
     static auto windowMaterial = CreateRef<Material>(windowTexture);
-    static auto frameBufferMaterial = CreateRef<Material>(TestFramebuffer->GetColorAttachment());
 
     Window->BeginFrame();
     Input::BeginFrame();
     {
-      // KRYS_PERFORMANCE_TIMER("Update");
-      TestFramebuffer->Bind();
-      Context->SetDepthTestingEnabled(true);
-      Context->Clear(ClearFlags::Color | ClearFlags::Depth);
-
-      static auto lightMoveSpeed = 0.01f;
-      if (Input::IsKeyPressed(KeyCode::LeftArrow))
-        lightSourceTransform->Position.x -= lightMoveSpeed * dt;
-      if (Input::IsKeyPressed(KeyCode::RightArrow))
-        lightSourceTransform->Position.x += lightMoveSpeed * dt;
-      if (Input::IsKeyPressed(KeyCode::UpArrow))
-        lightSourceTransform->Position.y += lightMoveSpeed * dt;
-      if (Input::IsKeyPressed(KeyCode::DownArrow))
-        lightSourceTransform->Position.y -= lightMoveSpeed * dt;
-
       CameraController->OnUpdate(Time::GetDeltaSecs());
+
+      Context->Clear(ClearFlags::Color | ClearFlags::Depth);
 
       Renderer2D::BeginScene(Camera);
       {
         Renderer2D::DrawCube(stageTransform, Colors::Gray50);
-        // for (float i = 0.0f; i < 20.0f; i++)
-        // {
-        //   objectTransform->Position.x = (i * 0.75f) - ((stageTransform->Size.x - objectTransform->Size.x) / 2.0f);
-        //   for (float j = 0.0f; j < 20.0f; j++)
-        //   {
-        //     objectTransform->Position.z = (j * 0.75f) - ((stageTransform->Size.z - objectTransform->Size.z) / 2.0f);
-        //     Renderer2D::DrawQuad(objectTransform, objectMaterial);
-        //   }
-        // }
-
         objectTransform->Position.z = 0.0f;
         Renderer2D::DrawCube(objectTransform, objectMaterial);
         objectTransform->Position.z = 2.0f;
@@ -138,18 +175,17 @@ namespace Krys
       }
       Renderer2D::EndScene();
 
-      TestFramebuffer->Unbind();
-      Context->Clear(ClearFlags::Color);
-      Context->SetDepthTestingEnabled(false);
-
-      Renderer2D::BeginScene(Camera, TestShader);
+      Context->SetDepthTestFunc(DepthTestFunc::EqualOrLess);
       {
-        frameBufferTargetTransform->Size = Vec3(1.2f);
-        Renderer2D::DrawQuad(frameBufferTargetTransform, Colors::Red);
-        frameBufferTargetTransform->Size = Vec3(1.0f);
-        Renderer2D::DrawQuad(frameBufferTargetTransform, frameBufferMaterial);
+        SkyboxShader->Bind();
+        auto view = Mat4(Mat3(Camera->GetView()));
+        auto viewProjection = Camera->GetProjection() * view;
+        SkyboxShader->SetUniform("u_ViewProjection", viewProjection);
+        SkyboxVAO->Bind();
+        skyboxTexture->Bind();
+        Renderer2D::DrawIndexed(SkyboxEBO->Size());
       }
-      Renderer2D::EndScene();
+      Context->SetDepthTestFunc(DepthTestFunc::Less);
     }
     Input::EndFrame();
     Window->EndFrame();
