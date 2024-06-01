@@ -21,6 +21,8 @@ namespace Krys
       Ref<VertexBuffer> SkyboxVBO;
       Ref<IndexBuffer> SkyboxEBO;
 
+      Ref<Shader> EnvironmentMappingShader;
+
     public:
       KrystalEditor();
 

@@ -125,13 +125,12 @@ namespace Krys
     SkyboxVBO = Context->CreateVertexBuffer(skyboxVertices, sizeof(skyboxVertices));
     SkyboxVBO->SetLayout(BufferLayout(sizeof(skyboxVertices), {{ShaderDataType::Float3, "a_Position"}}));
     SkyboxEBO = Context->CreateIndexBuffer(skyboxIndices, 36);
-
     SkyboxVAO->AddVertexBuffer(SkyboxVBO);
     SkyboxVAO->SetIndexBuffer(SkyboxEBO);
 
-    SkyboxShader = Context->CreateShader();
-    SkyboxShader->Load("shaders/skybox.vert", "shaders/skybox.frag");
-    SkyboxShader->Link();
+    SkyboxShader = Context->CreateShader("shaders/skybox.vert", "shaders/skybox.frag");
+
+    EnvironmentMappingShader = Context->CreateShader("shaders/environment-mapping.vert", "shaders/environment-mapping.frag");
   }
 
   void KrystalEditor::Update(float dt)
@@ -150,6 +149,7 @@ namespace Krys
 
     static auto stageTransform = CreateRef<Transform>(Vec3(0.0f, -0.25f, 0.0f), Vec3(15.0f, 0.25f, 15.0f));
     static auto objectTransform = CreateRef<Transform>(Vec3(0.0f, 0.54f, 0.0f), Vec3(1.0f));
+    static auto skyboxCrateTransform = CreateRef<Transform>(Vec3(0.0f), Vec3(1.0f));
 
     static auto objectMaterial = CreateRef<Material>(objectTexture);
     static auto windowMaterial = CreateRef<Material>(windowTexture);
@@ -161,17 +161,9 @@ namespace Krys
 
       Context->Clear(ClearFlags::Color | ClearFlags::Depth);
 
-      Renderer2D::BeginScene(Camera);
+      Renderer2D::BeginScene(Camera, EnvironmentMappingShader);
       {
-        Renderer2D::DrawCube(stageTransform, Colors::Gray50);
-        objectTransform->Position.z = 0.0f;
-        Renderer2D::DrawCube(objectTransform, objectMaterial);
-        objectTransform->Position.z = 2.0f;
-        objectTransform->Position.x = 0.5f;
-        Renderer2D::DrawQuad(objectTransform, windowMaterial);
-        objectTransform->Position.x = 0.0f;
-        objectTransform->Position.z = 1.0f;
-        Renderer2D::DrawQuad(objectTransform, windowMaterial);
+        Renderer2D::DrawCube(skyboxCrateTransform, skyboxTexture);
       }
       Renderer2D::EndScene();
 
