@@ -21,12 +21,6 @@ namespace Krys
     Renderer2D::Init(Context);
     Window->SetEventCallback(KRYS_BIND_EVENT_FN(KrystalEditor::OnEvent));
 
-    Context->SetDepthTestingEnabled(true);
-    Context->SetStencilTestingEnabled(true);
-    Context->SetBlendingEnabled(true);
-    Context->SetDepthTestFunc(DepthTestFunc::Less);
-    Context->SetBlendFunc(BlendFactor::SourceAlpha, BlendFactor::OneMinusSourceAlpha);
-
     auto camera = CreateRef<PerspectiveCamera>(Window->GetWidth(), Window->GetHeight(), 45.0f);
     camera->SetYaw(25.0f);
     camera->SetPitch(-40.0f);
@@ -42,10 +36,10 @@ namespace Krys
         0.5f, -0.5f, 0.0f, 0.0f, 1.0f, // bottom-right
         -0.5f, -0.5f, 1.0f, 1.0f, 0.0f // bottom-left
     };
-    SkyboxVAO = Context->CreateVertexArray();
-    SkyboxVBO = Context->CreateVertexBuffer(points, sizeof(points));
-    SkyboxVBO->SetLayout(BufferLayout(sizeof(points), {{ShaderDataType::Float2, "aPos"}, {ShaderDataType::Float3, "aColor"}}));
-    SkyboxVAO->AddVertexBuffer(SkyboxVBO);
+    TestVertexArray = Context->CreateVertexArray();
+    TestVertexBuffer = Context->CreateVertexBuffer(points, sizeof(points));
+    TestVertexBuffer->SetLayout(BufferLayout(sizeof(points), {{ShaderDataType::Float2, "aPos"}, {ShaderDataType::Float3, "aColor"}}));
+    TestVertexArray->AddVertexBuffer(TestVertexBuffer);
   }
 
   void KrystalEditor::Update(float dt)
@@ -63,7 +57,7 @@ namespace Krys
       CameraController->OnUpdate(Time::GetDeltaSecs());
       Context->Clear(ClearFlags::Color | ClearFlags::Depth);
 
-      SkyboxVAO->Bind();
+      TestVertexArray->Bind();
       TestShader->Bind();
       Context->DrawVertices(4, DrawMode::Points);
     }

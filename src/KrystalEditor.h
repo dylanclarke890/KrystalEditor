@@ -12,14 +12,12 @@ namespace Krys
       Ref<Camera> Camera;
       Ref<Controller> CameraController;
       bool WireFrameMode;
-      Ref<Model> TestModel;
+
       Ref<Shader> TestShader;
       Ref<Framebuffer> TestFramebuffer;
-
-      Ref<Shader> SkyboxShader;
-      Ref<VertexArray> SkyboxVAO;
-      Ref<VertexBuffer> SkyboxVBO;
-      Ref<IndexBuffer> SkyboxEBO;
+      Ref<VertexArray> TestVertexArray;
+      Ref<VertexBuffer> TestVertexBuffer;
+      Ref<IndexBuffer> TestIndexBuffer;
 
       Ref<Shader> EnvironmentMappingShader;
 
