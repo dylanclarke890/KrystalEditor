@@ -28,18 +28,41 @@ namespace Krys
     Camera = camera;
     CameraController = CreateRef<PerspectiveCameraController>(camera);
 
-    TestShader = Context->CreateShader("shaders/geo-shader-test/vertex.vert", "shaders/geo-shader-test/fragment.frag", "shaders/geo-shader-test/geometry.geo");
+    TestShader = Context->CreateShader("shaders/instancing/vertex.vert", "shaders/instancing/fragment.frag");
 
-    float points[] = {
-        -0.5f, 0.5f, 1.0f, 0.0f, 0.0f, // top-left
-        0.5f, 0.5f, 0.0f, 1.0f, 0.0f,  // top-right
-        0.5f, -0.5f, 0.0f, 0.0f, 1.0f, // bottom-right
-        -0.5f, -0.5f, 1.0f, 1.0f, 0.0f // bottom-left
-    };
+    float quadVertices[] = {
+        // positions     // colors
+        -0.05f, 0.05f, 1.0f, 0.0f, 0.0f,
+        0.05f, -0.05f, 0.0f, 1.0f, 0.0f,
+        -0.05f, -0.05f, 0.0f, 0.0f, 1.0f,
+
+        -0.05f, 0.05f, 1.0f, 0.0f, 0.0f,
+        0.05f, -0.05f, 0.0f, 1.0f, 0.0f,
+        0.05f, 0.05f, 0.0f, 1.0f, 1.0f};
     TestVertexArray = Context->CreateVertexArray();
-    TestVertexBuffer = Context->CreateVertexBuffer(points, sizeof(points));
-    TestVertexBuffer->SetLayout(BufferLayout(sizeof(points), {{ShaderDataType::Float2, "aPos"}, {ShaderDataType::Float3, "aColor"}}));
+    TestVertexBuffer = Context->CreateVertexBuffer(quadVertices, sizeof(quadVertices));
+    TestVertexBuffer->SetLayout(BufferLayout(sizeof(quadVertices), {{ShaderDataType::Float2, "aPos"}, {ShaderDataType::Float3, "aColor"}}));
     TestVertexArray->AddVertexBuffer(TestVertexBuffer);
+
+    Vec2 translations[100];
+    int index = 0;
+    float offset = 0.1f;
+    for (int y = -10; y < 10; y += 2)
+    {
+      for (int x = -10; x < 10; x += 2)
+      {
+        Vec2 translation;
+        translation.x = (float)x / 10.0f + offset;
+        translation.y = (float)y / 10.0f + offset;
+        translations[index++] = translation;
+      }
+    }
+
+    for (uint i = 0; i < 100; i++)
+    {
+      auto name = ("offsets[" + std::to_string(i) + "]");
+      TestShader->SetUniform(name.c_str(), translations[i]);
+    }
   }
 
   void KrystalEditor::Update(float dt)
@@ -59,7 +82,7 @@ namespace Krys
 
       TestVertexArray->Bind();
       TestShader->Bind();
-      Context->DrawVertices(4, DrawMode::Points);
+      Context->DrawVerticesInstanced(100, 6, DrawMode::Triangles);
     }
     Input::EndFrame();
     Window->EndFrame();
