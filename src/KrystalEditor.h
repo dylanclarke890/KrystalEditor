@@ -17,6 +17,7 @@ namespace Krys
       Ref<Framebuffer> TestFramebuffer;
       Ref<VertexArray> TestVertexArray;
       Ref<VertexBuffer> TestVertexBuffer;
+      Ref<InstanceArrayBuffer> TestInstanceArrayBuffer;
       Ref<IndexBuffer> TestIndexBuffer;
 
       Ref<Shader> EnvironmentMappingShader;

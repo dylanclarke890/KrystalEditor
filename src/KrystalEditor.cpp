@@ -39,10 +39,9 @@ namespace Krys
         -0.05f, 0.05f, 1.0f, 0.0f, 0.0f,
         0.05f, -0.05f, 0.0f, 1.0f, 0.0f,
         0.05f, 0.05f, 0.0f, 1.0f, 1.0f};
-    TestVertexArray = Context->CreateVertexArray();
+
     TestVertexBuffer = Context->CreateVertexBuffer(quadVertices, sizeof(quadVertices));
-    TestVertexBuffer->SetLayout(BufferLayout(sizeof(quadVertices), {{ShaderDataType::Float2, "aPos"}, {ShaderDataType::Float3, "aColor"}}));
-    TestVertexArray->AddVertexBuffer(TestVertexBuffer);
+    TestVertexBuffer->SetLayout(VertexBufferLayout({{ShaderDataType::Float2, "aPos"}, {ShaderDataType::Float3, "aColor"}}));
 
     Vec2 translations[100];
     int index = 0;
@@ -57,12 +56,13 @@ namespace Krys
         translations[index++] = translation;
       }
     }
+    TestInstanceArrayBuffer = Context->CreateInstanceArrayBuffer(translations, sizeof(translations));
+    TestInstanceArrayBuffer->SetLayout(InstanceArrayBufferLayout({{ShaderDataType::Float2, "aOffset", 1}}));
+    TestInstanceArrayBuffer->SetData(&translations, sizeof(translations));
 
-    for (uint i = 0; i < 100; i++)
-    {
-      auto name = ("offsets[" + std::to_string(i) + "]");
-      TestShader->SetUniform(name.c_str(), translations[i]);
-    }
+    TestVertexArray = Context->CreateVertexArray();
+    TestVertexArray->AddVertexBuffer(TestVertexBuffer);
+    TestVertexArray->AddInstanceArrayBuffer(TestInstanceArrayBuffer);
   }
 
   void KrystalEditor::Update(float dt)
