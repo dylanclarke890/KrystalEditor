@@ -36,67 +36,15 @@ namespace Krys
     Context->SetDepthTestFunc(DepthTestFunc::Less);
 
     auto camera = CreateRef<PerspectiveCamera>(Window->GetWidth(), Window->GetHeight(), 45.0f, 0.1f, 1000.0f);
-    camera->SetYaw(105.0f);
-    camera->SetPitch(-60.0f);
-    camera->SetPosition(Vec3(-70.0f, 100.0f, 0.0f));
+    camera->SetYaw(160.0f);
+    camera->SetPitch(-30.0f);
+    camera->SetPosition(Vec3(0.0f, 5.0f, -10.0f));
     Camera = camera;
-    CameraController = CreateRef<PerspectiveCameraController>(camera);
-
-    Shaders["default"] = Context->CreateShader("shaders/instanced-drawing/v.vert", "shaders/instanced-drawing/f.frag");
-    Shaders["model"] = Context->CreateShader("shaders/models/v.vert", "shaders/models/f.frag");
-
-    float quadVertices[] = {
-        // positions     // colors
-        -0.05f, 0.05f, 1.0f, 0.0f, 0.0f,
-        0.05f, -0.05f, 0.0f, 1.0f, 0.0f,
-        -0.05f, -0.05f, 0.0f, 0.0f, 1.0f,
-
-        -0.05f, 0.05f, 1.0f, 0.0f, 0.0f,
-        0.05f, -0.05f, 0.0f, 1.0f, 0.0f,
-        0.05f, 0.05f, 0.0f, 1.0f, 1.0f};
-
-    VertexArrays["default"] = Context->CreateVertexArray();
-
-    VertexBuffers["default"] = Context->CreateVertexBuffer(quadVertices, sizeof(quadVertices));
-    VertexBuffers["default"]->SetLayout(
-        VertexBufferLayout(
-            {{ShaderDataType::Float2, "aPos"},
-             {ShaderDataType::Float3, "aColor"}}));
-    VertexArrays["default"]->AddVertexBuffer(VertexBuffers["default"]);
+    auto cameraController = CreateRef<PerspectiveCameraController>(camera);
+    cameraController->SetSpeed(10.0f);
+    CameraController = cameraController;
 
     Textures["crate"] = Context->CreateTexture2D("textures/crate.png");
-
-    Models["asteroid"] = CreateRef<Model>("models/asteroid/rock.obj");
-    Models["planet"] = CreateRef<Model>("models/mars/planet.obj");
-
-    srand(Random::UInt()); // initialize random seed
-
-    float radius = 50.0;
-    float offset = 2.5f;
-    for (uint i = 0; i < ModelCount; i++)
-    {
-      Mat4 model = Mat4(1.0f);
-      // 1. translation: displace along circle with 'radius' in range [-offset, offset]
-      float angle = (float)i / (float)ModelCount * 360.0f;
-      float displacement = (rand() % (int)(2 * offset * 100)) / 100.0f - offset;
-      float x = sin(angle) * radius + displacement;
-      displacement = (rand() % (int)(2 * offset * 100)) / 100.0f - offset;
-      float y = displacement * 0.4f; // keep height of field smaller compared to width of x and z
-      displacement = (rand() % (int)(2 * offset * 100)) / 100.0f - offset;
-      float z = cos(angle) * radius + displacement;
-      model = glm::translate(model, Vec3(x, y, z));
-
-      // 2. scale: scale between 0.05 and 0.25f
-      float scale = (rand() % 20) / 100.0f + 0.05f;
-      model = glm::scale(model, Vec3(scale));
-
-      // 3. rotation: add random rotation around a (semi)randomly picked rotation axis vector
-      float rotationAngle = Random::Float(0.0f, 360.0f);
-      model = glm::rotate(model, rotationAngle, Vec3(0.4f, 0.6f, 0.8f));
-
-      // 4. now add to list of matrices
-      ModelMatrices[i] = model;
-    }
 
     float skyboxVertices[108] = {
         // positions
@@ -158,7 +106,7 @@ namespace Krys
   void KrystalEditor::Update(float dt)
   {
     static auto objectMaterial = CreateRef<Material>(Textures["crate"]);
-    static auto objectTransform = CreateRef<Transform>(Vec3(0.0f, 0.54f, 0.0f), Vec3(1.0f));
+    static auto objectTransform = CreateRef<Transform>(Vec3(0.0f, 0.54f, 0.0f), Vec3(1.0f), Vec3(45.0f));
 
     static auto stageTransform = CreateRef<Transform>(Vec3(0.0f, -0.25f, 0.0f), Vec3(15.0f, 0.25f, 15.0f));
     static auto planetTransform = CreateRef<Transform>(Vec3(0.0f, -3.0f, 0.0f), Vec3(4.0f));
@@ -169,19 +117,9 @@ namespace Krys
       CameraController->OnUpdate(Time::GetDeltaSecs());
       Context->Clear(ClearFlags::Color | ClearFlags::Depth);
 
-      auto modelShader = Shaders["model"];
-      Renderer2D::BeginScene(Camera, modelShader);
+      Renderer2D::BeginScene(Camera);
       {
-
-        modelShader->Bind();
-        modelShader->SetUniform("u_Model", planetTransform->GetModel());
-        Models["planet"]->Draw(modelShader);
-
-        for (uint i = 0; i < ModelCount; i++)
-        {
-          Shaders["model"]->SetUniform("u_Model", ModelMatrices[i]);
-          Models["asteroid"]->Draw(Shaders["model"]);
-        }
+        Renderer2D::DrawCube(objectTransform, Colors::Green);
       }
       Renderer2D::EndScene();
 
