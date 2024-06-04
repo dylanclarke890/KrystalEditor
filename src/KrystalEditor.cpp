@@ -14,8 +14,8 @@ namespace Krys
   KrystalEditor::KrystalEditor()
       : Application("Krystal Editor", 1280, 720, 60.0f),
         Camera(nullptr), CameraController(nullptr), WireFrameMode(false),
-        VertexArrays({}), VertexBuffers({}), IndexBuffers({}), InstanceArrayBuffers({}),
-        Framebuffers({}), Textures({}), Shaders({})
+        VertexArrays({}), UniformBuffers({}), VertexBuffers({}), IndexBuffers({}),
+        InstanceArrayBuffers({}), Framebuffers({}), Textures({}), Models({}), Shaders({})
   {
   }
 
@@ -32,7 +32,8 @@ namespace Krys
     Camera = camera;
     CameraController = CreateRef<PerspectiveCameraController>(camera);
 
-    Shaders["test"] = Context->CreateShader("shaders/instancing/vertex.vert", "shaders/instancing/fragment.frag");
+    Shaders["default"] = Context->CreateShader("shaders/instancing/vertex.vert", "shaders/instancing/fragment.frag");
+    Shaders["model"] = Context->CreateShader("shaders/models/test-model.vert", "shaders/models/test-model.frag");
 
     float quadVertices[] = {
         // positions     // colors
@@ -44,8 +45,8 @@ namespace Krys
         0.05f, -0.05f, 0.0f, 1.0f, 0.0f,
         0.05f, 0.05f, 0.0f, 1.0f, 1.0f};
 
-    VertexBuffers["test"] = Context->CreateVertexBuffer(quadVertices, sizeof(quadVertices));
-    VertexBuffers["test"]->SetLayout(
+    VertexBuffers["default"] = Context->CreateVertexBuffer(quadVertices, sizeof(quadVertices));
+    VertexBuffers["default"]->SetLayout(
         VertexBufferLayout(
             {{ShaderDataType::Float2, "aPos"},
              {ShaderDataType::Float3, "aColor"}}));
@@ -63,15 +64,18 @@ namespace Krys
         translations[index++] = translation;
       }
     }
-    InstanceArrayBuffers["test"] = Context->CreateInstanceArrayBuffer(translations, sizeof(translations));
-    InstanceArrayBuffers["test"]->SetLayout(InstanceArrayBufferLayout({{ShaderDataType::Float2, "aOffset", 1}}));
-    InstanceArrayBuffers["test"]->SetData(&translations, sizeof(translations));
+    InstanceArrayBuffers["default"] = Context->CreateInstanceArrayBuffer(translations, sizeof(translations));
+    InstanceArrayBuffers["default"]->SetLayout(InstanceArrayBufferLayout({{ShaderDataType::Float2, "aOffset", 1}}));
+    InstanceArrayBuffers["default"]->SetData(&translations, sizeof(translations));
 
-    VertexArrays["test"] = Context->CreateVertexArray();
-    VertexArrays["test"]->AddVertexBuffer(VertexBuffers["test"]);
-    VertexArrays["test"]->AddInstanceArrayBuffer(InstanceArrayBuffers["test"]);
+    VertexArrays["default"] = Context->CreateVertexArray();
+    VertexArrays["default"]->AddVertexBuffer(VertexBuffers["default"]);
+    VertexArrays["default"]->AddInstanceArrayBuffer(InstanceArrayBuffers["default"]);
 
     Textures["crate"] = Context->CreateTexture2D("textures/crate.png");
+
+    Models["asteroid"] = CreateRef<Model>("models/asteroid/rock.obj");
+    Models["planet"] = CreateRef<Model>("models/mars/planet.obj");
   }
 
   void KrystalEditor::Update(float dt)
@@ -88,8 +92,8 @@ namespace Krys
       CameraController->OnUpdate(Time::GetDeltaSecs());
       Context->Clear(ClearFlags::Color | ClearFlags::Depth);
 
-      VertexArrays["test"]->Bind();
-      Shaders["test"]->Bind();
+      VertexArrays["default"]->Bind();
+      Shaders["default"]->Bind();
       Context->DrawVerticesInstanced(100, 6, DrawMode::Triangles);
     }
     Input::EndFrame();

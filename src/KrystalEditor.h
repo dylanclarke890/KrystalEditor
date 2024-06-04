@@ -17,10 +17,12 @@ namespace Krys
 
       std::unordered_map<std::string, Ref<VertexArray>> VertexArrays;
       std::unordered_map<std::string, Ref<VertexBuffer>> VertexBuffers;
+      std::unordered_map<std::string, Ref<UniformBuffer>> UniformBuffers;
       std::unordered_map<std::string, Ref<IndexBuffer>> IndexBuffers;
       std::unordered_map<std::string, Ref<InstanceArrayBuffer>> InstanceArrayBuffers;
       std::unordered_map<std::string, Ref<Framebuffer>> Framebuffers;
       std::unordered_map<std::string, Ref<Texture2D>> Textures;
+      std::unordered_map<std::string, Ref<Model>> Models;
       std::unordered_map<std::string, Ref<Shader>> Shaders;
 
     public:
