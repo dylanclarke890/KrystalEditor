@@ -1,4 +1,4 @@
-#include <Graphics/Renderer/Renderer2D.h>
+#include <Graphics/Renderer/Renderer.h>
 #include <Graphics/Camera/Orthographic.h>
 #include <Graphics/Camera/Perspective.h>
 #include <Graphics/Colors.h>
@@ -27,7 +27,7 @@ namespace Krys
   {
     Application::Startup();
 
-    Renderer2D::Init(Context);
+    Renderer::Init(Context);
     Random::Init();
 
     Window->SetEventCallback(KRYS_BIND_EVENT_FN(KrystalEditor::OnEvent));
@@ -132,22 +132,22 @@ namespace Krys
       Framebuffers["multisample"]->Bind(FramebufferBindType::ReadAndDraw);
       Context->Clear(RenderBuffer::Color | RenderBuffer::Depth);
 
-      Renderer2D::BeginScene(Camera);
+      Renderer::BeginScene(Camera);
       {
-        Renderer2D::DrawCube(objectTransform, Colors::Green);
-        Renderer2D::DrawCube(stageTransform, Colors::Gray50);
+        Renderer::DrawCube(objectTransform, Colors::Green);
+        Renderer::DrawCube(stageTransform, Colors::Gray50);
       }
-      Renderer2D::EndScene();
+      Renderer::EndScene();
       RectBounds bounds = {static_cast<float>(0), static_cast<float>(Window->GetWidth()), static_cast<float>(0), static_cast<float>(Window->GetHeight())};
       Framebuffers["multisample"]->BlitTo(Framebuffers["resolved"], bounds, bounds, RenderBuffer::Color);
       Context->Clear(RenderBuffer::Color | RenderBuffer::Depth);
 
-      Renderer2D::BeginScene(Camera, Shaders["post-processing"]);
+      Renderer::BeginScene(Camera, Shaders["post-processing"]);
       {
-        Renderer2D::DrawCube(objectTransform, Colors::Green);
-        Renderer2D::DrawCube(stageTransform, stageMaterial);
+        Renderer::DrawCube(objectTransform, Colors::Green);
+        Renderer::DrawCube(stageTransform, stageMaterial);
       }
-      Renderer2D::EndScene();
+      Renderer::EndScene();
 
       Framebuffers["multisample"]->BlitToScreen(bounds, bounds, RenderBuffer::Color);
 
@@ -209,7 +209,7 @@ namespace Krys
 
   void KrystalEditor::Shutdown()
   {
-    Renderer2D::Shutdown();
+    Renderer::Shutdown();
     Application::Shutdown();
   }
 }
