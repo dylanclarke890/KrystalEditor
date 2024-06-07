@@ -101,16 +101,15 @@ namespace Krys
                                                         "cubemaps/space-skybox/bottom.png",
                                                         "cubemaps/space-skybox/front.png",
                                                         "cubemaps/space-skybox/back.png"});
+    DirectionalLight sampleDirectionalLight;
+    sampleDirectionalLight.Enabled = true;
+    sampleDirectionalLight.Ambient = Vec3(0.5f);                  // Low ambient light
+    sampleDirectionalLight.Diffuse = Vec3(0.5f, 0.5f, 0.5f);      // Moderate diffuse light
+    sampleDirectionalLight.Specular = Vec3(1.0f, 1.0f, 1.0f);     // Strong specular light
+    sampleDirectionalLight.Intensity = 1.0f;                      // Full intensity
+    sampleDirectionalLight.Direction = Vec3(-0.2f, -1.0f, -0.3f); // Direction of the light
 
-    auto multisampleFramebuffer = Context->CreateFramebuffer(Window->GetWidth(), Window->GetHeight(), 4);
-    Framebuffers["multisample"] = multisampleFramebuffer;
-    multisampleFramebuffer->AddColorAttachment();
-    multisampleFramebuffer->AddDepthStencilAttachment();
-
-    Framebuffers["resolved"] = Context->CreateFramebuffer(Window->GetWidth(), Window->GetHeight(), 1);
-    Framebuffers["resolved"]->AddColorAttachment();
-
-    Shaders["post-processing"] = Context->CreateShader("shaders/renderer-2d/v.vert", "shaders/basic/scene-texture.frag");
+    Renderer::Lights.AddDirectionalLight(sampleDirectionalLight);
   }
 
   void KrystalEditor::Update(float dt)
@@ -118,7 +117,6 @@ namespace Krys
     static auto objectMaterial = CreateRef<Material>(Textures["crate"]);
     static auto objectTransform = CreateRef<Transform>(Vec3(0.0f, 0.54f, 0.0f), Vec3(1.0f), Vec3(45.0f));
 
-    static auto stageMaterial = CreateRef<Material>(Framebuffers["resolved"]->GetColorAttachment());
     static auto stageTransform = CreateRef<Transform>(Vec3(0.0f, -0.25f, 0.0f), Vec3(15.0f, 0.25f, 15.0f));
 
     Window->BeginFrame();
@@ -126,44 +124,26 @@ namespace Krys
     {
       KRYS_PERFORMANCE_TIMER("Frame")
       CameraController->OnUpdate(Time::GetDeltaSecs());
-
-      Framebuffers["resolved"]->Bind();
-      Context->Clear(RenderBuffer::Color);
-      Framebuffers["multisample"]->Bind(FramebufferBindType::ReadAndDraw);
       Context->Clear(RenderBuffer::Color | RenderBuffer::Depth);
 
       Renderer::BeginScene(Camera);
       {
-        Renderer::DrawCube(objectTransform, Colors::Green);
+        Renderer::DrawCube(objectTransform, objectMaterial);
         Renderer::DrawCube(stageTransform, Colors::Gray50);
       }
       Renderer::EndScene();
-      RectBounds bounds = {static_cast<float>(0), static_cast<float>(Window->GetWidth()), static_cast<float>(0), static_cast<float>(Window->GetHeight())};
-      Framebuffers["multisample"]->BlitTo(Framebuffers["resolved"], bounds, bounds, RenderBuffer::Color);
-      Context->Clear(RenderBuffer::Color | RenderBuffer::Depth);
 
-      Renderer::BeginScene(Camera, Shaders["post-processing"]);
+      Context->SetDepthTestFunc(DepthTestFunc::EqualOrLess);
       {
-        Renderer::DrawCube(objectTransform, Colors::Green);
-        Renderer::DrawCube(stageTransform, stageMaterial);
+        Shaders["skybox"]->Bind();
+        auto view = Mat4(Mat3(Camera->GetView()));
+        auto viewProjection = Camera->GetProjection() * view;
+        Shaders["skybox"]->SetUniform("u_ViewProjection", viewProjection);
+        VertexArrays["skybox"]->Bind();
+        Cubemaps["skybox"]->Bind();
+        Context->DrawVertices(36);
       }
-      Renderer::EndScene();
-
-      Framebuffers["multisample"]->BlitToScreen(bounds, bounds, RenderBuffer::Color);
-
-#if 0
-      // Context->SetDepthTestFunc(DepthTestFunc::EqualOrLess);
-      // {
-      //   Shaders["skybox"]->Bind();
-      //   auto view = Mat4(Mat3(Camera->GetView()));
-      //   auto viewProjection = Camera->GetProjection() * view;
-      //   Shaders["skybox"]->SetUniform("u_ViewProjection", viewProjection);
-      //   VertexArrays["skybox"]->Bind();
-      //   Cubemaps["skybox"]->Bind();
-      //   Context->DrawVertices(36);
-      // }
-      // Context->SetDepthTestFunc(DepthTestFunc::Less);
-#endif
+      Context->SetDepthTestFunc(DepthTestFunc::Less);
     }
     Input::EndFrame();
     Window->EndFrame();
