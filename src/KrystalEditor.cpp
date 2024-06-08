@@ -45,6 +45,7 @@ namespace Krys
     CameraController = cameraController;
 
     Textures["crate"] = Context->CreateTexture2D("textures/crate.png");
+    Textures["crate-specular"] = Context->CreateTexture2D("textures/crate-specular.png");
 
     float skyboxVertices[108] = {
         // positions
@@ -101,21 +102,56 @@ namespace Krys
                                                         "cubemaps/space-skybox/bottom.png",
                                                         "cubemaps/space-skybox/front.png",
                                                         "cubemaps/space-skybox/back.png"});
+
     DirectionalLight sampleDirectionalLight;
-    sampleDirectionalLight.Enabled = true;
-    sampleDirectionalLight.Ambient = Vec3(0.5f);                  // Low ambient light
-    sampleDirectionalLight.Diffuse = Vec3(0.5f, 0.5f, 0.5f);      // Moderate diffuse light
-    sampleDirectionalLight.Specular = Vec3(1.0f, 1.0f, 1.0f);     // Strong specular light
-    sampleDirectionalLight.Intensity = 1.0f;                      // Full intensity
-    sampleDirectionalLight.Direction = Vec3(-0.2f, -1.0f, -0.3f); // Direction of the light
+    sampleDirectionalLight.Ambient = Vec3(0.3f);  // Low ambient light
+    sampleDirectionalLight.Diffuse = Vec3(0.5f);  // Moderate diffuse light
+    sampleDirectionalLight.Specular = Vec3(1.0f); // Strong specular light
+    sampleDirectionalLight.Enabled = false;
+    sampleDirectionalLight.Intensity = 1.0f;                    // Full intensity
+    sampleDirectionalLight.Direction = Vec3(0.4f, -1.0f, 0.0f); // Direction of the light
 
     Renderer::Lights.AddDirectionalLight(sampleDirectionalLight);
+
+    PointLight samplePointLight;
+    samplePointLight.Ambient = Vec3(0.3f);             // Low ambient light
+    samplePointLight.Diffuse = Vec3(0.8f, 0.8f, 0.8f); // Moderate diffuse light
+    samplePointLight.Specular = Vec3(1.0f);            // Strong specular light
+    samplePointLight.Constant = 1.0f;                  // Constant attenuation term
+    samplePointLight.Linear = 0.09f;                   // Linear attenuation term
+    samplePointLight.Quadratic = 0.032f;               // Quadratic attenuation term
+    samplePointLight.Enabled = false;
+    samplePointLight.Intensity = 1.0f;                  // Full intensity
+    samplePointLight.Position = Vec3(3.0f, 6.0f, 2.0f); // Position of the point light
+
+    Renderer::Lights.AddPointLight(samplePointLight);
+
+    SpotLight sampleSpotLight;
+    sampleSpotLight.Ambient = Vec3(0.2f, 0.2f, 0.2f);  // Low ambient light
+    sampleSpotLight.Diffuse = Vec3(0.8f, 0.8f, 0.8f);  // Moderate diffuse light
+    sampleSpotLight.Specular = Vec3(1.0f, 1.0f, 1.0f); // Strong specular light
+    sampleSpotLight.Constant = 1.0f;                   // Constant attenuation term
+    sampleSpotLight.Linear = 0.09f;                    // Linear attenuation term
+    sampleSpotLight.Quadratic = 0.032f;                // Quadratic attenuation term
+    sampleSpotLight.Enabled = true;
+    sampleSpotLight.Intensity = 1.0f;                            // Full intensity
+    sampleSpotLight.Direction = Vec3(0.0f, -1.0f, 0.0f);         // Direction of the spotlight
+    sampleSpotLight.Position = Vec3(0.0f, 5.0f, 0.0f);           // Position of the spotlight
+    sampleSpotLight.InnerCutoff = glm::cos(glm::radians(12.5f)); // Inner cutoff angle (cosine of the angle)
+    sampleSpotLight.OuterCutoff = glm::cos(glm::radians(17.5f)); // Outer cutoff angle (cosine of the angle)
+
+    Renderer::Lights.AddSpotLight(sampleSpotLight);
+
+    Shaders["light-source"] = Context->CreateShader("shaders/lighting/light-source.vert", "shaders/lighting/light-source.frag");
   }
 
   void KrystalEditor::Update(float dt)
   {
-    static auto objectMaterial = CreateRef<Material>(Textures["crate"]);
-    static auto objectTransform = CreateRef<Transform>(Vec3(0.0f, 0.54f, 0.0f), Vec3(1.0f), Vec3(45.0f));
+    static auto objectMaterial = CreateRef<Material>(Textures["crate"], Textures["crate-specular"]);
+    objectMaterial->Shininess = 32.0f;
+
+    static auto objectTransform = CreateRef<Transform>(Vec3(0.0f, 0.54f, 0.0f), Vec3(1.0f), Vec3(0.0f));
+    static auto lightSourceTransform = CreateRef<Transform>(Vec3(0.0f), Vec3(1.0f));
 
     static auto stageTransform = CreateRef<Transform>(Vec3(0.0f, -0.25f, 0.0f), Vec3(15.0f, 0.25f, 15.0f));
 
@@ -129,7 +165,24 @@ namespace Krys
       Renderer::BeginScene(Camera);
       {
         Renderer::DrawCube(objectTransform, objectMaterial);
+        // Renderer::DrawCube(objectTransform, Colors::Green);
         Renderer::DrawCube(stageTransform, Colors::Gray50);
+      }
+      Renderer::EndScene();
+
+      Renderer::BeginScene(Camera, Shaders["light-source"]);
+      {
+        for (auto spotLight : Renderer::Lights.GetPointLights())
+        {
+          lightSourceTransform->Position = spotLight.Position;
+          Renderer::DrawCube(lightSourceTransform, Colors::Blue);
+        }
+
+        for (auto pointLight : Renderer::Lights.GetSpotLights())
+        {
+          lightSourceTransform->Position = pointLight.Position;
+          Renderer::DrawCube(lightSourceTransform, Colors::Yellow);
+        }
       }
       Renderer::EndScene();
 
