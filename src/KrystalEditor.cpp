@@ -136,7 +136,7 @@ namespace Krys
     sampleSpotLight.Enabled = true;
     sampleSpotLight.Intensity = 1.0f;                            // Full intensity
     sampleSpotLight.Direction = Vec3(0.0f, -1.0f, 0.0f);         // Direction of the spotlight
-    sampleSpotLight.Position = Vec3(0.0f, 5.0f, 0.0f);           // Position of the spotlight
+    sampleSpotLight.Position = Vec3(0.0f, 2.0f, 0.0f);           // Position of the spotlight
     sampleSpotLight.InnerCutoff = glm::cos(glm::radians(12.5f)); // Inner cutoff angle (cosine of the angle)
     sampleSpotLight.OuterCutoff = glm::cos(glm::radians(17.5f)); // Outer cutoff angle (cosine of the angle)
 
@@ -225,6 +225,16 @@ namespace Krys
     case KeyCode::Escape:
     {
       StopRunning();
+      break;
+    }
+    case KeyCode::O:
+    {
+      Renderer::Lights.SetLightingModel(LightingModel::BlinnPhong);
+      break;
+    }
+    case KeyCode::P:
+    {
+      Renderer::Lights.SetLightingModel(LightingModel::Phong);
       break;
     }
     default:
