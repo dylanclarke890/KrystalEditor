@@ -34,9 +34,7 @@ namespace Krys
     Context->SetDepthTestFunc(DepthTestFunc::Less);
 
     auto camera = CreateRef<PerspectiveCamera>(Window->GetWidth(), Window->GetHeight(), 45.0f, 0.1f, 1000.0f);
-    camera->SetYaw(160.0f);
-    camera->SetPitch(-30.0f);
-    camera->SetPosition(Vec3(0.0f, 0.0f, 3.0f));
+    camera->SetPosition(Vec3(0.0f, 0.0f, 5.0f));
     Camera = camera;
     auto cameraController = CreateRef<PerspectiveCameraController>(camera);
     cameraController->SetSpeed(10.0f);
@@ -47,7 +45,11 @@ namespace Krys
     Materials["crate"] = CreateRef<Material>(Textures["crate"], Textures["crate-specular"]);
     Materials["crate"]->Shininess = 32.0f;
     Transforms["crate"] = CreateRef<Transform>(Vec3(0.0f, 0.54f, 0.0f), Vec3(1.0f), Vec3(0.0f));
-    Transforms["stage"] = CreateRef<Transform>(Vec3(0.0f, -0.25f, 0.0f), Vec3(15.0f, 0.25f, 15.0f));
+
+    Textures["stage"] = Context->CreateTexture2D("textures/wood.png");
+    Materials["stage"] = CreateRef<Material>(Textures["stage"]);
+    Materials["stage"]->Shininess = 1.0f;
+    Transforms["stage"] = CreateRef<Transform>(Vec3(0.0f, 0.5f, 0.0f), Vec3(20.0f, 20.0f, 0.1f));
 
     Renderer::SetSkybox({"cubemaps/space-skybox/right.png",
                          "cubemaps/space-skybox/left.png",
@@ -74,9 +76,9 @@ namespace Krys
     samplePointLight.Constant = 1.0f;                  // Constant attenuation term
     samplePointLight.Linear = 0.09f;                   // Linear attenuation term
     samplePointLight.Quadratic = 0.032f;               // Quadratic attenuation term
-    samplePointLight.Enabled = false;
+    samplePointLight.Enabled = true;
     samplePointLight.Intensity = 1.0f;                  // Full intensity
-    samplePointLight.Position = Vec3(3.0f, 6.0f, 2.0f); // Position of the point light
+    samplePointLight.Position = Vec3(0.0f, 0.0f, 3.0f); // Position of the point light
 
     Renderer::Lights.AddPointLight(samplePointLight);
 
@@ -87,10 +89,10 @@ namespace Krys
     sampleSpotLight.Constant = 1.0f;                   // Constant attenuation term
     sampleSpotLight.Linear = 0.09f;                    // Linear attenuation term
     sampleSpotLight.Quadratic = 0.032f;                // Quadratic attenuation term
-    sampleSpotLight.Enabled = true;
+    sampleSpotLight.Enabled = false;
     sampleSpotLight.Intensity = 1.0f;                            // Full intensity
     sampleSpotLight.Direction = Vec3(0.0f, -1.0f, 0.0f);         // Direction of the spotlight
-    sampleSpotLight.Position = Vec3(0.0f, 2.0f, 0.0f);           // Position of the spotlight
+    sampleSpotLight.Position = Vec3(0.0f, 0.0f, 0.0f);           // Position of the spotlight
     sampleSpotLight.InnerCutoff = glm::cos(glm::radians(12.5f)); // Inner cutoff angle (cosine of the angle)
     sampleSpotLight.OuterCutoff = glm::cos(glm::radians(17.5f)); // Outer cutoff angle (cosine of the angle)
 
@@ -98,7 +100,7 @@ namespace Krys
 #pragma endregion Light Setup
 
     Shaders["light-source"] = Context->CreateShader("shaders/lighting/light-source.vert", "shaders/lighting/light-source.frag");
-    Transforms["light-source"] = CreateRef<Transform>(Vec3(0.0f), Vec3(1.0f));
+    Transforms["light-source"] = CreateRef<Transform>(Vec3(0.0f), Vec3(0.3f));
   }
 
   void KrystalEditor::Update(float dt)
@@ -110,24 +112,27 @@ namespace Krys
       CameraController->OnUpdate(Time::GetDeltaSecs());
       Context->Clear(RenderBuffer::Color | RenderBuffer::Depth);
 
-      Renderer::BeginScene(Camera);
+      Renderer::BeginScene(Camera, Shaders["light-test"]);
       {
-        Renderer::DrawCube(Transforms["crate"], Materials["crate"]);
-        Renderer::DrawCube(Transforms["stage"], Colors::Gray50);
+        Renderer::DrawCube(Transforms["stage"], Materials["stage"]);
       }
       Renderer::EndScene();
 
-      Renderer::BeginScene(Camera, Shaders["light-source"]);
+      Renderer::BeginScene(Camera);
       {
-        for (auto spotLight : Renderer::Lights.GetPointLights())
+        for (auto pointLight : Renderer::Lights.GetPointLights())
         {
-          Transforms["light-source"]->Position = spotLight.Position;
+          if (!pointLight.Enabled)
+            continue;
+          Transforms["light-source"]->Position = pointLight.Position;
           Renderer::DrawCube(Transforms["light-source"], Colors::Blue);
         }
 
-        for (auto pointLight : Renderer::Lights.GetSpotLights())
+        for (auto spotLight : Renderer::Lights.GetSpotLights())
         {
-          Transforms["light-source"]->Position = pointLight.Position;
+          if (!spotLight.Enabled)
+            continue;
+          Transforms["light-source"]->Position = spotLight.Position;
           Renderer::DrawCube(Transforms["light-source"], Colors::Yellow);
         }
       }
