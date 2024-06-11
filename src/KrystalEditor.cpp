@@ -12,14 +12,12 @@
 
 namespace Krys
 {
-  static uint ModelCount = 1000;
-  static Mat4 *ModelMatrices = new Mat4[ModelCount];
-
   KrystalEditor::KrystalEditor()
       : Application("Krystal Editor", 1280, 720, 60.0f),
         Camera(nullptr), CameraController(nullptr), WireFrameMode(false),
         VertexArrays({}), UniformBuffers({}), VertexBuffers({}), IndexBuffers({}),
-        InstanceArrayBuffers({}), Framebuffers({}), Textures({}), Models({}), Shaders({})
+        InstanceArrayBuffers({}), Framebuffers({}), Textures({}), Models({}), Shaders({}),
+        Materials({}), Transforms({})
   {
   }
 
@@ -38,7 +36,7 @@ namespace Krys
     auto camera = CreateRef<PerspectiveCamera>(Window->GetWidth(), Window->GetHeight(), 45.0f, 0.1f, 1000.0f);
     camera->SetYaw(160.0f);
     camera->SetPitch(-30.0f);
-    camera->SetPosition(Vec3(0.0f, 5.0f, -10.0f));
+    camera->SetPosition(Vec3(0.0f, 0.0f, 3.0f));
     Camera = camera;
     auto cameraController = CreateRef<PerspectiveCameraController>(camera);
     cameraController->SetSpeed(10.0f);
@@ -46,63 +44,19 @@ namespace Krys
 
     Textures["crate"] = Context->CreateTexture2D("textures/crate.png");
     Textures["crate-specular"] = Context->CreateTexture2D("textures/crate-specular.png");
+    Materials["crate"] = CreateRef<Material>(Textures["crate"], Textures["crate-specular"]);
+    Materials["crate"]->Shininess = 32.0f;
+    Transforms["crate"] = CreateRef<Transform>(Vec3(0.0f, 0.54f, 0.0f), Vec3(1.0f), Vec3(0.0f));
+    Transforms["stage"] = CreateRef<Transform>(Vec3(0.0f, -0.25f, 0.0f), Vec3(15.0f, 0.25f, 15.0f));
 
-    float skyboxVertices[108] = {
-        // positions
-        -1.0f, 1.0f, -1.0f,
-        -1.0f, -1.0f, -1.0f,
-        1.0f, -1.0f, -1.0f,
-        1.0f, -1.0f, -1.0f,
-        1.0f, 1.0f, -1.0f,
-        -1.0f, 1.0f, -1.0f,
+    Renderer::SetSkybox({"cubemaps/space-skybox/right.png",
+                         "cubemaps/space-skybox/left.png",
+                         "cubemaps/space-skybox/top.png",
+                         "cubemaps/space-skybox/bottom.png",
+                         "cubemaps/space-skybox/front.png",
+                         "cubemaps/space-skybox/back.png"});
 
-        -1.0f, -1.0f, 1.0f,
-        -1.0f, -1.0f, -1.0f,
-        -1.0f, 1.0f, -1.0f,
-        -1.0f, 1.0f, -1.0f,
-        -1.0f, 1.0f, 1.0f,
-        -1.0f, -1.0f, 1.0f,
-
-        1.0f, -1.0f, -1.0f,
-        1.0f, -1.0f, 1.0f,
-        1.0f, 1.0f, 1.0f,
-        1.0f, 1.0f, 1.0f,
-        1.0f, 1.0f, -1.0f,
-        1.0f, -1.0f, -1.0f,
-
-        -1.0f, -1.0f, 1.0f,
-        -1.0f, 1.0f, 1.0f,
-        1.0f, 1.0f, 1.0f,
-        1.0f, 1.0f, 1.0f,
-        1.0f, -1.0f, 1.0f,
-        -1.0f, -1.0f, 1.0f,
-
-        -1.0f, 1.0f, -1.0f,
-        1.0f, 1.0f, -1.0f,
-        1.0f, 1.0f, 1.0f,
-        1.0f, 1.0f, 1.0f,
-        -1.0f, 1.0f, 1.0f,
-        -1.0f, 1.0f, -1.0f,
-
-        -1.0f, -1.0f, -1.0f,
-        -1.0f, -1.0f, 1.0f,
-        1.0f, -1.0f, -1.0f,
-        1.0f, -1.0f, -1.0f,
-        -1.0f, -1.0f, 1.0f,
-        1.0f, -1.0f, 1.0f};
-    VertexArrays["skybox"] = Context->CreateVertexArray();
-    VertexBuffers["skybox"] = Context->CreateVertexBuffer(skyboxVertices, sizeof(skyboxVertices));
-    VertexBuffers["skybox"]->SetLayout(VertexBufferLayout({{ShaderDataType::Float3, "a_Position"}}));
-    VertexArrays["skybox"]->AddVertexBuffer(VertexBuffers["skybox"]);
-
-    Shaders["skybox"] = Context->CreateShader("shaders/skybox/v.vert", "shaders/skybox/f.frag");
-    Cubemaps["skybox"] = Context->CreateTextureCubemap({"cubemaps/space-skybox/right.png",
-                                                        "cubemaps/space-skybox/left.png",
-                                                        "cubemaps/space-skybox/top.png",
-                                                        "cubemaps/space-skybox/bottom.png",
-                                                        "cubemaps/space-skybox/front.png",
-                                                        "cubemaps/space-skybox/back.png"});
-
+#pragma region Light Setup
     DirectionalLight sampleDirectionalLight;
     sampleDirectionalLight.Ambient = Vec3(0.3f);  // Low ambient light
     sampleDirectionalLight.Diffuse = Vec3(0.5f);  // Moderate diffuse light
@@ -141,20 +95,14 @@ namespace Krys
     sampleSpotLight.OuterCutoff = glm::cos(glm::radians(17.5f)); // Outer cutoff angle (cosine of the angle)
 
     Renderer::Lights.AddSpotLight(sampleSpotLight);
+#pragma endregion Light Setup
 
     Shaders["light-source"] = Context->CreateShader("shaders/lighting/light-source.vert", "shaders/lighting/light-source.frag");
+    Transforms["light-source"] = CreateRef<Transform>(Vec3(0.0f), Vec3(1.0f));
   }
 
   void KrystalEditor::Update(float dt)
   {
-    static auto objectMaterial = CreateRef<Material>(Textures["crate"], Textures["crate-specular"]);
-    objectMaterial->Shininess = 32.0f;
-
-    static auto objectTransform = CreateRef<Transform>(Vec3(0.0f, 0.54f, 0.0f), Vec3(1.0f), Vec3(0.0f));
-    static auto lightSourceTransform = CreateRef<Transform>(Vec3(0.0f), Vec3(1.0f));
-
-    static auto stageTransform = CreateRef<Transform>(Vec3(0.0f, -0.25f, 0.0f), Vec3(15.0f, 0.25f, 15.0f));
-
     Window->BeginFrame();
     Input::BeginFrame();
     {
@@ -164,9 +112,8 @@ namespace Krys
 
       Renderer::BeginScene(Camera);
       {
-        Renderer::DrawCube(objectTransform, objectMaterial);
-        // Renderer::DrawCube(objectTransform, Colors::Green);
-        Renderer::DrawCube(stageTransform, Colors::Gray50);
+        Renderer::DrawCube(Transforms["crate"], Materials["crate"]);
+        Renderer::DrawCube(Transforms["stage"], Colors::Gray50);
       }
       Renderer::EndScene();
 
@@ -174,29 +121,18 @@ namespace Krys
       {
         for (auto spotLight : Renderer::Lights.GetPointLights())
         {
-          lightSourceTransform->Position = spotLight.Position;
-          Renderer::DrawCube(lightSourceTransform, Colors::Blue);
+          Transforms["light-source"]->Position = spotLight.Position;
+          Renderer::DrawCube(Transforms["light-source"], Colors::Blue);
         }
 
         for (auto pointLight : Renderer::Lights.GetSpotLights())
         {
-          lightSourceTransform->Position = pointLight.Position;
-          Renderer::DrawCube(lightSourceTransform, Colors::Yellow);
+          Transforms["light-source"]->Position = pointLight.Position;
+          Renderer::DrawCube(Transforms["light-source"], Colors::Yellow);
         }
       }
       Renderer::EndScene();
-
-      Context->SetDepthTestFunc(DepthTestFunc::EqualOrLess);
-      {
-        Shaders["skybox"]->Bind();
-        auto view = Mat4(Mat3(Camera->GetView()));
-        auto viewProjection = Camera->GetProjection() * view;
-        Shaders["skybox"]->SetUniform("u_ViewProjection", viewProjection);
-        VertexArrays["skybox"]->Bind();
-        Cubemaps["skybox"]->Bind();
-        Context->DrawVertices(36);
-      }
-      Context->SetDepthTestFunc(DepthTestFunc::Less);
+      Renderer::DrawSkybox(Camera);
     }
     Input::EndFrame();
     Window->EndFrame();
