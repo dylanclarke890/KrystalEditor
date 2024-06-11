@@ -34,14 +34,13 @@ namespace Krys
     Context->SetDepthTestFunc(DepthTestFunc::Less);
 
     auto camera = CreateRef<PerspectiveCamera>(Window->GetWidth(), Window->GetHeight(), 45.0f, 0.1f, 1000.0f);
-    camera->SetPosition(Vec3(0.0f, 0.0f, 5.0f));
+    camera->SetPosition(Vec3(0.0f, 0.0f, 15.0f));
     Camera = camera;
     auto cameraController = CreateRef<PerspectiveCameraController>(camera);
     cameraController->SetSpeed(10.0f);
     CameraController = cameraController;
 
     Textures["crate"] = Context->CreateTexture2D("textures/crate.png");
-    Textures["crate-specular"] = Context->CreateTexture2D("textures/crate-specular.png");
     Materials["crate"] = CreateRef<Material>(Textures["crate"], Textures["crate-specular"]);
     Materials["crate"]->Shininess = 32.0f;
     Transforms["crate"] = CreateRef<Transform>(Vec3(0.0f, 0.54f, 0.0f), Vec3(1.0f), Vec3(0.0f));
@@ -155,6 +154,9 @@ namespace Krys
 
   bool KrystalEditor::OnKeyPressEvent(KeyPressedEvent &event)
   {
+    static bool useBlinn = false;
+    static bool useSRGBFramebuffer = false;
+
     switch (event.Key)
     {
     case KeyCode::Space:
@@ -170,12 +172,14 @@ namespace Krys
     }
     case KeyCode::O:
     {
-      Renderer::Lights.SetLightingModel(LightingModel::BlinnPhong);
+      useBlinn = !useBlinn;
+      Renderer::Lights.SetLightingModel(useBlinn ? LightingModel::BlinnPhong : LightingModel::Phong);
       break;
     }
-    case KeyCode::P:
+    case KeyCode::G:
     {
-      Renderer::Lights.SetLightingModel(LightingModel::Phong);
+      useSRGBFramebuffer = !useSRGBFramebuffer;
+      Context->SetGammaCorrectionEnabled(useSRGBFramebuffer);
       break;
     }
     default:
