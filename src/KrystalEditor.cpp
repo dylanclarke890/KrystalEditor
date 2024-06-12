@@ -25,7 +25,7 @@ namespace Krys
   {
     Application::Startup();
 
-    Renderer::Init(Context);
+    Renderer::Init(Window, Context);
     Random::Init();
 
     Window->SetEventCallback(KRYS_BIND_EVENT_FN(KrystalEditor::OnEvent));
@@ -117,6 +117,9 @@ namespace Krys
       }
       Renderer::EndScene();
 
+#ifdef DRAW_LIGHT_SOURCES
+      // TODO: this is commented out because we can't render multiple scenes anymore.
+      // We need a way to switch shaders mid batch or similar.
       Renderer::BeginScene(Camera);
       {
         for (auto pointLight : Renderer::Lights.GetPointLights())
@@ -136,6 +139,7 @@ namespace Krys
         }
       }
       Renderer::EndScene();
+#endif
       Renderer::DrawSkybox(Camera);
     }
     Input::EndFrame();
