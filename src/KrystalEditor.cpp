@@ -98,7 +98,7 @@ namespace Krys
     Renderer::Lights.AddSpotLight(sampleSpotLight);
 #pragma endregion Light Setup
 
-    Shaders["light-source"] = Context->CreateShader("shaders/lighting/light-source.vert", "shaders/lighting/light-source.frag");
+    Shaders["light-source"] = Context->CreateShader("shaders/renderer/light-source.vert", "shaders/renderer/light-source.frag");
     Transforms["light-source"] = CreateRef<Transform>(Vec3(0.0f), Vec3(0.3f));
   }
 
