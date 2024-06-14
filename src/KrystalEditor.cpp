@@ -14,10 +14,10 @@ namespace Krys
 {
   KrystalEditor::KrystalEditor()
       : Application("Krystal Editor", 1280, 720, 60.0f),
-        Camera(nullptr), CameraController(nullptr), WireFrameMode(false),
+        Camera(nullptr), CameraController(nullptr),
         VertexArrays({}), UniformBuffers({}), VertexBuffers({}), IndexBuffers({}),
-        InstanceArrayBuffers({}), Framebuffers({}), Textures({}), Models({}), Shaders({}),
-        Materials({}), Transforms({})
+        InstanceArrayBuffers({}), Framebuffers({}), Shaders({}), Textures({}), Cubemaps({}),
+        Models({}), Materials({}), Transforms({})
   {
   }
 
@@ -26,15 +26,18 @@ namespace Krys
     Application::Startup();
 
     Renderer::Init(Window, Context);
+    Renderer::SetPostProcessingEnabled(true);
+
     Random::Init();
 
     Window->SetEventCallback(KRYS_BIND_EVENT_FN(KrystalEditor::OnEvent));
 
     Context->SetDepthTestingEnabled(true);
     Context->SetDepthTestFunc(DepthTestFunc::Less);
+    Context->SetClearColor(Vec4(0.3f));
 
     auto camera = CreateRef<PerspectiveCamera>(Window->GetWidth(), Window->GetHeight(), 45.0f, 0.1f, 1000.0f);
-    camera->SetPosition(Vec3(0.0f, 0.0f, 15.0f));
+    camera->SetPosition(Vec3(0.0f, 7.0f, 15.0f));
     Camera = camera;
     auto cameraController = CreateRef<PerspectiveCameraController>(camera);
     cameraController->SetSpeed(10.0f);
@@ -43,12 +46,12 @@ namespace Krys
     Textures["crate"] = Context->CreateTexture2D("textures/crate.png");
     Materials["crate"] = CreateRef<Material>(Textures["crate"], Textures["crate-specular"]);
     Materials["crate"]->Shininess = 32.0f;
-    Transforms["crate"] = CreateRef<Transform>(Vec3(0.0f, 0.54f, 0.0f), Vec3(1.0f), Vec3(0.0f));
+    Transforms["crate"] = CreateRef<Transform>(Vec3(0.0f, 2.5f, 0.0f), Vec3(1.0f), Vec3(0.0f));
 
     Textures["stage"] = Context->CreateTexture2D("textures/wood.png");
     Materials["stage"] = CreateRef<Material>(Textures["stage"]);
     Materials["stage"]->Shininess = 1.0f;
-    Transforms["stage"] = CreateRef<Transform>(Vec3(0.0f, 0.5f, 0.0f), Vec3(20.0f, 20.0f, 0.1f));
+    Transforms["stage"] = CreateRef<Transform>(Vec3(0.0f, 0.5f, 0.0f), Vec3(20.0f, 1.0f, 20.0f));
 
     Renderer::SetSkybox({"cubemaps/space-skybox/right.png",
                          "cubemaps/space-skybox/left.png",
@@ -77,7 +80,7 @@ namespace Krys
     samplePointLight.Quadratic = 0.032f;               // Quadratic attenuation term
     samplePointLight.Enabled = true;
     samplePointLight.Intensity = 1.0f;                  // Full intensity
-    samplePointLight.Position = Vec3(0.0f, 0.0f, 3.0f); // Position of the point light
+    samplePointLight.Position = Vec3(0.0f, 6.0f, 0.0f); // Position of the point light
 
     Renderer::Lights.AddPointLight(samplePointLight);
 
@@ -104,46 +107,17 @@ namespace Krys
 
   void KrystalEditor::Update(float dt)
   {
-    Window->BeginFrame();
-    Input::BeginFrame();
+    KRYS_PERFORMANCE_TIMER("Frame")
+
+    CameraController->OnUpdate(dt);
+    Context->Clear(RenderBuffer::Color | RenderBuffer::Depth);
+
+    Renderer::BeginScene(Camera);
     {
-      KRYS_PERFORMANCE_TIMER("Frame")
-      CameraController->OnUpdate(Time::GetDeltaSecs());
-      Context->Clear(RenderBuffer::Color | RenderBuffer::Depth);
-
-      Renderer::BeginScene(Camera, Shaders["light-test"]);
-      {
-        Renderer::DrawCube(Transforms["stage"], Materials["stage"]);
-      }
-      Renderer::EndScene();
-
-#ifdef DRAW_LIGHT_SOURCES
-      // TODO: this is commented out because we can't render multiple scenes anymore.
-      // We need a way to switch shaders mid batch or similar.
-      Renderer::BeginScene(Camera);
-      {
-        for (auto pointLight : Renderer::Lights.GetPointLights())
-        {
-          if (!pointLight.Enabled)
-            continue;
-          Transforms["light-source"]->Position = pointLight.Position;
-          Renderer::DrawCube(Transforms["light-source"], Colors::Blue);
-        }
-
-        for (auto spotLight : Renderer::Lights.GetSpotLights())
-        {
-          if (!spotLight.Enabled)
-            continue;
-          Transforms["light-source"]->Position = spotLight.Position;
-          Renderer::DrawCube(Transforms["light-source"], Colors::Yellow);
-        }
-      }
-      Renderer::EndScene();
-#endif
-      Renderer::DrawSkybox(Camera);
+      Renderer::DrawCube(Transforms["crate"], Materials["crate"]);
+      Renderer::DrawCube(Transforms["stage"], Materials["stage"]);
     }
-    Input::EndFrame();
-    Window->EndFrame();
+    Renderer::EndScene();
   }
 
   void KrystalEditor::OnEvent(Event &event)
@@ -156,25 +130,36 @@ namespace Krys
     Application::OnEvent(event);
   }
 
+  void Krys::KrystalEditor::BeginFrame()
+  {
+    Application::BeginFrame();
+  }
+
+  void Krys::KrystalEditor::EndFrame()
+  {
+    Application::EndFrame();
+  }
+
   bool KrystalEditor::OnKeyPressEvent(KeyPressedEvent &event)
   {
     static bool useBlinn = false;
     static bool useSRGBFramebuffer = false;
+    static bool useWireframeMode = false;
 
     switch (event.Key)
     {
     case KeyCode::Space:
     {
-      WireFrameMode = !WireFrameMode;
-      Context->SetWireframeModeEnabled(WireFrameMode);
+      useWireframeMode = !useWireframeMode;
+      Renderer::SetWireFrameModeEnabled(useWireframeMode);
       break;
     }
     case KeyCode::Escape:
     {
-      StopRunning();
+      Stop();
       break;
     }
-    case KeyCode::O:
+    case KeyCode::P:
     {
       useBlinn = !useBlinn;
       Renderer::Lights.SetLightingModel(useBlinn ? LightingModel::BlinnPhong : LightingModel::Phong);
