@@ -34,31 +34,30 @@ namespace Krys
 
     Context->SetDepthTestingEnabled(true);
     Context->SetDepthTestFunc(DepthTestFunc::Less);
-    Context->SetClearColor(Vec4(0.3f));
+    Context->SetClearColor(Vec4(0.5f));
 
-    auto camera = CreateRef<PerspectiveCamera>(Window->GetWidth(), Window->GetHeight(), 45.0f, 0.1f, 1000.0f);
+    auto camera = CreateRef<OrthographicCamera>(Window->GetWidth(), Window->GetHeight(), 0.0f, 1000.0f);
     camera->SetPosition(Vec3(0.0f, 7.0f, 15.0f));
     Camera = camera;
-    auto cameraController = CreateRef<PerspectiveCameraController>(camera);
-    cameraController->SetSpeed(10.0f);
+    auto cameraController = CreateRef<OrthographicCameraController>(camera);
     CameraController = cameraController;
 
     Textures["crate"] = Context->CreateTexture2D("textures/crate.png");
     Materials["crate"] = CreateRef<Material>(Textures["crate"], Textures["crate-specular"]);
     Materials["crate"]->Shininess = 32.0f;
-    Transforms["crate"] = CreateRef<Transform>(Vec3(0.0f, 2.5f, 0.0f), Vec3(1.0f), Vec3(0.0f));
+    Transforms["crate"] = CreateRef<Transform>(Vec3(200.0f), Vec3(200.0f), Vec3(0.0f));
 
     Textures["stage"] = Context->CreateTexture2D("textures/wood.png");
     Materials["stage"] = CreateRef<Material>(Textures["stage"]);
     Materials["stage"]->Shininess = 1.0f;
     Transforms["stage"] = CreateRef<Transform>(Vec3(0.0f, 0.5f, 0.0f), Vec3(20.0f, 1.0f, 20.0f));
 
-    Renderer::SetSkybox({"cubemaps/space-skybox/right.png",
-                         "cubemaps/space-skybox/left.png",
-                         "cubemaps/space-skybox/top.png",
-                         "cubemaps/space-skybox/bottom.png",
-                         "cubemaps/space-skybox/front.png",
-                         "cubemaps/space-skybox/back.png"});
+    // Renderer::SetSkybox({"cubemaps/space-skybox/right.png",
+    //                      "cubemaps/space-skybox/left.png",
+    //                      "cubemaps/space-skybox/top.png",
+    //                      "cubemaps/space-skybox/bottom.png",
+    //                      "cubemaps/space-skybox/front.png",
+    //                      "cubemaps/space-skybox/back.png"});
 
 #pragma region Light Setup
     DirectionalLight sampleDirectionalLight;
@@ -112,10 +111,15 @@ namespace Krys
     CameraController->OnUpdate(dt);
     Context->Clear(RenderBuffer::Color | RenderBuffer::Depth);
 
+    const float speed = 20.0f;
+
     Renderer::BeginScene(Camera);
     {
+      auto crateTransform = Transforms["crate"];
+      crateTransform->Rotation.x += speed * dt;
+      crateTransform->Rotation.y += speed * dt;
       Renderer::DrawCube(Transforms["crate"], Materials["crate"]);
-      Renderer::DrawCube(Transforms["stage"], Materials["stage"]);
+      // Renderer::DrawCube(Transforms["stage"], Materials["stage"]);
     }
     Renderer::EndScene();
   }
