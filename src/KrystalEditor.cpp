@@ -81,7 +81,7 @@ namespace Krys
     samplePointLight.Constant = 1.0f;                  // Constant attenuation term
     samplePointLight.Linear = 0.09f;                   // Linear attenuation term
     samplePointLight.Quadratic = 0.032f;               // Quadratic attenuation term
-    samplePointLight.Enabled = false;
+    samplePointLight.Enabled = true;
     samplePointLight.Intensity = 1.0f;                  // Full intensity
     samplePointLight.Position = Vec3(0.0f, 6.0f, 0.0f); // Position of the point light
 
