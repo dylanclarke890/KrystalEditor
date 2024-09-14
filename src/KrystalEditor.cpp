@@ -47,12 +47,14 @@ namespace Krys
     Textures["crate"] = Context->CreateTexture2D("textures/crate.png");
     Materials["crate"] = CreateRef<Material>(Textures["crate"], Textures["crate-specular"]);
     Materials["crate"]->Shininess = 32.0f;
-    Transforms["crate"] = CreateRef<Transform>(Vec3(0.0f, 2.0f, 0.0f), Vec3(1.0f), Vec3(0.0f));
+    Transforms["crate"] = CreateRef<Transform>(Vec3(0.0f, -6.0f, 0.0f), Vec3(1.0f), Vec3(0.0f));
+    Transforms["crate-2"] = CreateRef<Transform>(Vec3(6.0f, 0.0f, 0.0f), Vec3(1.0f), Vec3(0.0f));
+    Transforms["square"] = CreateRef<Transform>(Vec3(0.0f, -4.0f, 0.0f), Vec3(5.0f, 1.0f, 5.0f), Vec3(0.0f));
 
     Textures["stage"] = Context->CreateTexture2D("textures/wood.png");
     Materials["stage"] = CreateRef<Material>(Textures["stage"]);
     Materials["stage"]->Shininess = 1.0f;
-    Transforms["stage"] = CreateRef<Transform>(Vec3(0.0f, 0.0f, 0.0f), Vec3(20.0f, 1.0f, 20.0f));
+    Transforms["stage"] = CreateRef<Transform>(Vec3(0.0f, -10.0f, 0.0f), Vec3(20.0f, 1.0f, 20.0f));
 
     // Renderer::SetSkybox({"cubemaps/space-skybox/right.png",
     //                      "cubemaps/space-skybox/left.png",
@@ -68,14 +70,14 @@ namespace Krys
     sampleDirectionalLight.Ambient = Vec3(0.3f);  // Low ambient light
     sampleDirectionalLight.Diffuse = Vec3(0.5f);  // Moderate diffuse light
     sampleDirectionalLight.Specular = Vec3(1.0f); // Strong specular light
-    sampleDirectionalLight.Enabled = true;
+    sampleDirectionalLight.Enabled = false;
     sampleDirectionalLight.Intensity = 1.0f;                    // Full intensity
     sampleDirectionalLight.Direction = Vec3(0.0f, -1.0f, 0.0f); // Direction of the light
 
     Renderer::Lights.AddDirectionalLight(sampleDirectionalLight);
 
     PointLight samplePointLight;
-    samplePointLight.Ambient = Vec3(0.3f);             // Low ambient light
+    samplePointLight.Ambient = Vec3(0.9f);             // Low ambient light
     samplePointLight.Diffuse = Vec3(0.8f, 0.8f, 0.8f); // Moderate diffuse light
     samplePointLight.Specular = Vec3(1.0f);            // Strong specular light
     samplePointLight.Constant = 1.0f;                  // Constant attenuation term
@@ -83,7 +85,7 @@ namespace Krys
     samplePointLight.Quadratic = 0.032f;               // Quadratic attenuation term
     samplePointLight.Enabled = true;
     samplePointLight.Intensity = 1.0f;                  // Full intensity
-    samplePointLight.Position = Vec3(0.0f, 6.0f, 0.0f); // Position of the point light
+    samplePointLight.Position = Vec3(0.0f, 0.0f, 0.0f); // Position of the point light
 
     Renderer::Lights.AddPointLight(samplePointLight);
 
@@ -117,12 +119,25 @@ namespace Krys
 
     const float speed = 20.0f;
 
+    if (Input::IsKeyPressed(KeyCode::UpArrow))
+    {
+      Transforms["crate"]->Position.y += speed * dt;
+      Transforms["stage"]->Position.y += speed * dt;
+    }
+
+    if (Input::IsKeyPressed(KeyCode::DownArrow))
+    {
+      Transforms["crate"]->Position.y -= speed * dt;
+      Transforms["stage"]->Position.y -= speed * dt;
+    }
+
     Renderer::BeginScene(Camera);
     {
       auto crateTransform = Transforms["crate"];
       crateTransform->Rotation.x += speed * dt;
       crateTransform->Rotation.y += speed * dt;
       Renderer::DrawCube(Transforms["crate"], Materials["crate"]);
+      Renderer::DrawCube(Transforms["crate-2"], Materials["crate"]);
       Renderer::DrawCube(Transforms["stage"], Materials["stage"]);
     }
     Renderer::EndScene();
