@@ -45,17 +45,24 @@ namespace Krys
     CameraController = cameraController;
 
     Textures["crate"] = Context->CreateTexture2D("textures/crate.png");
-    Materials["crate"] = CreateRef<Material>(Textures["crate"], Textures["crate-specular"]);
+    Textures["crate-specular"] = Context->CreateTexture2D("textures/crate-specular.png");
+
+    Textures["wood"] = Context->CreateTexture2D("textures/wood.png");
+
+    Textures["brickwall"] = Context->CreateTexture2D("textures/brickwall.jpg");
+    Textures["brickwall-normal"] = Context->CreateTexture2D("textures/brickwall-normal.jpg");
+
+    Materials["crate"] = CreateRef<Material>(Textures["crate"]);
+    Materials["crate"]->Specular = Textures["crate-specular"];
     Materials["crate"]->Shininess = 32.0f;
-    Transforms["crate"] = CreateRef<Transform>(Vec3(0.0f, -6.0f, 0.0f), Vec3(1.0f), Vec3(0.0f));
-    Transforms["crate-2"] = CreateRef<Transform>(Vec3(6.0f, 0.0f, 0.0f), Vec3(1.0f), Vec3(0.0f));
-    Transforms["square"] = CreateRef<Transform>(Vec3(0.0f, -4.0f, 0.0f), Vec3(5.0f, 1.0f, 5.0f), Vec3(0.0f));
 
-    Textures["stage"] = Context->CreateTexture2D("textures/wood.png");
-    Materials["stage"] = CreateRef<Material>(Textures["stage"]);
+    Materials["stage"] = CreateRef<Material>(Textures["brickwall"]);
+    Materials["stage"]->Normal = Textures["brickwall-normal"];
     Materials["stage"]->Shininess = 1.0f;
-    Transforms["stage"] = CreateRef<Transform>(Vec3(0.0f, -10.0f, 0.0f), Vec3(20.0f, 1.0f, 20.0f));
 
+    Transforms["stage"] = CreateRef<Transform>(Vec3(0.0f, -10.0f, 0.0f), Vec3(20.0f, 1.0f, 20.0f));
+    Transforms["crate"] = CreateRef<Transform>(Vec3(0.0f, -6.0f, 0.0f), Vec3(1.0f), Vec3(0.0f));
+    Transforms["square"] = CreateRef<Transform>(Vec3(0.0f, -4.0f, 0.0f), Vec3(5.0f, 1.0f, 5.0f), Vec3(0.0f));
     // Renderer::SetSkybox({"cubemaps/space-skybox/right.png",
     //                      "cubemaps/space-skybox/left.png",
     //                      "cubemaps/space-skybox/top.png",
@@ -118,26 +125,26 @@ namespace Krys
     Context->Clear(RenderBuffer::Color | RenderBuffer::Depth);
 
     const float speed = 20.0f;
+    auto crateTransform = Transforms["crate"];
 
     if (Input::IsKeyPressed(KeyCode::UpArrow))
     {
-      Transforms["crate"]->Position.y += speed * dt;
+      crateTransform->Position.y += speed * dt;
       Transforms["stage"]->Position.y += speed * dt;
     }
 
     if (Input::IsKeyPressed(KeyCode::DownArrow))
     {
-      Transforms["crate"]->Position.y -= speed * dt;
+      crateTransform->Position.y -= speed * dt;
       Transforms["stage"]->Position.y -= speed * dt;
     }
 
+    crateTransform->Rotation.x += speed * dt;
+    crateTransform->Rotation.y += speed * dt;
+
     Renderer::BeginScene(Camera);
     {
-      auto crateTransform = Transforms["crate"];
-      crateTransform->Rotation.x += speed * dt;
-      crateTransform->Rotation.y += speed * dt;
-      Renderer::DrawCube(Transforms["crate"], Materials["crate"]);
-      Renderer::DrawCube(Transforms["crate-2"], Materials["crate"]);
+      Renderer::DrawCube(crateTransform, Materials["crate"]);
       Renderer::DrawCube(Transforms["stage"], Materials["stage"]);
     }
     Renderer::EndScene();
