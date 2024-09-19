@@ -52,6 +52,10 @@ namespace Krys
     Textures["brickwall"] = Context->CreateTexture2D("textures/brickwall.jpg");
     Textures["brickwall-normal"] = Context->CreateTexture2D("textures/brickwall-normal.jpg");
 
+    Textures["red-bricks"] = Context->CreateTexture2D("textures/red-bricks.jpg");
+    Textures["red-bricks-normal"] = Context->CreateTexture2D("textures/red-bricks-normal.jpg");
+    Textures["red-bricks-displacement"] = Context->CreateTexture2D("textures/red-bricks-displacement.jpg");
+
     Materials["crate"] = CreateRef<Material>(Textures["crate"]);
     Materials["crate"]->Specular = Textures["crate-specular"];
     Materials["crate"]->Shininess = 32.0f;
@@ -59,6 +63,10 @@ namespace Krys
     Materials["stage"] = CreateRef<Material>(Textures["brickwall"]);
     Materials["stage"]->Normal = Textures["brickwall-normal"];
     Materials["stage"]->Shininess = 1.0f;
+
+    Materials["red-bricks"] = CreateRef<Material>(Textures["red-bricks"]);
+    Materials["red-bricks"]->Normal = Textures["red-bricks-normal"];
+    Materials["red-bricks"]->Displacement = Textures["red-bricks-displacement"];
 
     Transforms["stage"] = CreateRef<Transform>(Vec3(0.0f, -10.0f, 0.0f), Vec3(20.0f, 1.0f, 20.0f));
     Transforms["crate"] = CreateRef<Transform>(Vec3(0.0f, -6.0f, 0.0f), Vec3(1.0f), Vec3(0.0f));
@@ -145,7 +153,7 @@ namespace Krys
     Renderer::BeginScene(Camera);
     {
       Renderer::DrawCube(crateTransform, Materials["crate"]);
-      Renderer::DrawCube(Transforms["stage"], Materials["stage"]);
+      Renderer::DrawCube(Transforms["stage"], Materials["red-bricks"]);
     }
     Renderer::EndScene();
   }
