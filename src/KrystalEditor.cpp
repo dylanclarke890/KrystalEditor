@@ -25,7 +25,7 @@ namespace Krys
   {
     Application::Startup();
 
-    Renderer::Init(Window, Context);
+    Renderer::Init(Window, Context, true);
     Renderer::SetPostProcessingEnabled(true);
 
     Random::Init();
