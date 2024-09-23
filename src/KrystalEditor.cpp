@@ -3,6 +3,8 @@
 #include <Graphics/Camera/Perspective.h>
 #include <Graphics/Colors.h>
 
+#include <IO/IO.h>
+
 #include <Misc/Performance.h>
 #include <Misc/Time.h>
 #include <Misc/Chrono.h>
@@ -134,7 +136,7 @@ namespace Krys
 
   void KrystalEditor::Update(float dt)
   {
-    KRYS_PERFORMANCE_TIMER("Frame")
+    KRYS_PERFORMANCE_TIMER("Frame");
 
     CameraController->OnUpdate(dt);
     Context->Clear(RenderBuffer::Color | RenderBuffer::Depth);
