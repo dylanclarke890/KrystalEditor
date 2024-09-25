@@ -108,7 +108,8 @@ namespace Krys
     samplePointLight.Linear = 0.09f;                   // Linear attenuation term
     samplePointLight.Quadratic = 0.032f;               // Quadratic attenuation term
     samplePointLight.Enabled = true;
-    samplePointLight.Intensity = 1.0f;                  // Full intensity
+    samplePointLight.Intensity = 1.0f; // Full intensity
+    samplePointLight.FarPlane = 25.0f;
     samplePointLight.Position = Vec3(0.0f, 0.0f, 0.0f); // Position of the point light
 
     Renderer::Lights.AddPointLight(samplePointLight);
