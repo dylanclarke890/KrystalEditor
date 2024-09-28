@@ -74,8 +74,8 @@ namespace Krys
     Materials["red-bricks"]->Displacement = Textures["red-bricks-displacement"];
 
     Materials["toy-box"] = CreateRef<Material>(Textures["wood"]);
-    // Materials["toy-box"]->Normal = Textures["toy-box-normal"];
-    // Materials["toy-box"]->Displacement = Textures["toy-box-displacement"];
+    Materials["toy-box"]->Normal = Textures["toy-box-normal"];
+    Materials["toy-box"]->Displacement = Textures["toy-box-displacement"];
 
     Transforms["stage"] = CreateRef<Transform>(Vec3(0.0f, -10.0f, 0.0f), Vec3(20.0f, 1.0f, 20.0f));
     Transforms["crate"] = CreateRef<Transform>(Vec3(0.0f, -6.0f, 0.0f), Vec3(1.0f), Vec3(0.0f));
@@ -98,7 +98,6 @@ namespace Krys
     sampleDirectionalLight.Enabled = true;
     sampleDirectionalLight.Intensity = 1.0f;
     sampleDirectionalLight.Direction = Vec3(0.0f, -1.0f, 0.0f);
-    sampleDirectionalLight.Position = Vec3(0.0f, 0.0f, 0.0f);
 
     Renderer::Lights.AddLight(sampleDirectionalLight, {true});
 
