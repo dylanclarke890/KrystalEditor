@@ -74,8 +74,8 @@ namespace Krys
     Materials["red-bricks"]->Displacement = Textures["red-bricks-displacement"];
 
     Materials["toy-box"] = CreateRef<Material>(Textures["wood"]);
-    Materials["toy-box"]->Normal = Textures["toy-box-normal"];
-    Materials["toy-box"]->Displacement = Textures["toy-box-displacement"];
+    // Materials["toy-box"]->Normal = Textures["toy-box-normal"];
+    // Materials["toy-box"]->Displacement = Textures["toy-box-displacement"];
 
     Transforms["stage"] = CreateRef<Transform>(Vec3(0.0f, -10.0f, 0.0f), Vec3(20.0f, 1.0f, 20.0f));
     Transforms["crate"] = CreateRef<Transform>(Vec3(0.0f, -6.0f, 0.0f), Vec3(1.0f), Vec3(0.0f));
@@ -122,18 +122,15 @@ namespace Krys
     sampleSpotLight.Constant = 1.0f;
     sampleSpotLight.Linear = 0.09f;
     sampleSpotLight.Quadratic = 0.032f;
-    sampleSpotLight.Enabled = false;
+    sampleSpotLight.Enabled = true;
     sampleSpotLight.Intensity = 1.0f;
-    sampleSpotLight.Direction = Vec3(0.0f, -1.0f, 0.0f);
-    sampleSpotLight.Position = Vec3(0.0f, 0.0f, 0.0f);
-    sampleSpotLight.InnerCutoff = glm::cos(glm::radians(12.5f));
-    sampleSpotLight.OuterCutoff = glm::cos(glm::radians(17.5f));
+    sampleSpotLight.Direction = Vec3(0.3f, -1.0f, 0.0f);
+    sampleSpotLight.Position = Vec3(-2.0f, 1.0f, 0.0f);
+    sampleSpotLight.InnerCutoff = glm::radians(12.5f);
+    sampleSpotLight.OuterCutoff = glm::radians(17.5f);
 
-    Renderer::Lights.AddLight(sampleSpotLight, {false});
+    Renderer::Lights.AddLight(sampleSpotLight, {true});
 #pragma endregion Light Setup
-
-    Shaders["light-source"] = Context->CreateShader("shaders/renderer/light-source.vert", "shaders/renderer/light-source.frag");
-    Transforms["light-source"] = CreateRef<Transform>(Vec3(0.0f), Vec3(0.3f));
   }
 
   void KrystalEditor::Update(float dt)
