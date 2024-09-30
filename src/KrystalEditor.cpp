@@ -91,9 +91,9 @@ namespace Krys
     Renderer::Lights.EnableLighting();
     Renderer::Lights.EnableShadows();
 
-    DirectionalLight sampleDirectionalLight;
+    DirectionalLight sampleDirectionalLight{};
     sampleDirectionalLight.Ambient = Vec3(0.0f);
-    sampleDirectionalLight.Diffuse = Vec3(0.5f);
+    sampleDirectionalLight.Diffuse = Vec3(0.0f, 1.0f, 0.0f);
     sampleDirectionalLight.Specular = Vec3(1.0f);
     sampleDirectionalLight.Enabled = true;
     sampleDirectionalLight.Intensity = 1.0f;
@@ -101,35 +101,75 @@ namespace Krys
 
     Renderer::Lights.AddLight(sampleDirectionalLight, {true});
 
-    PointLight samplePointLight;
-    samplePointLight.Ambient = Vec3(0.9f);
-    samplePointLight.Diffuse = Vec3(0.8f, 0.8f, 0.8f);
-    samplePointLight.Specular = Vec3(1.0f);
-    samplePointLight.Constant = 1.0f;
-    samplePointLight.Linear = 0.09f;
-    samplePointLight.Quadratic = 0.032f;
-    samplePointLight.Enabled = true;
-    samplePointLight.Intensity = 1.0f;
-    samplePointLight.FarPlane = 25.0f;
-    samplePointLight.Position = Vec3(3.0f, 0.0f, 0.0f);
+    sampleDirectionalLight = DirectionalLight{};
+    sampleDirectionalLight.Ambient = Vec3(0.0f);
+    sampleDirectionalLight.Diffuse = Vec3(1.0f, 0.0f, 0.0f);
+    sampleDirectionalLight.Specular = Vec3(1.0f);
+    sampleDirectionalLight.Enabled = true;
+    sampleDirectionalLight.Intensity = 1.0f;
+    sampleDirectionalLight.Direction = Vec3(0.1f, -1.0f, 0.0f);
 
-    Renderer::Lights.AddLight(samplePointLight, {true});
+    Renderer::Lights.AddLight(sampleDirectionalLight, {true});
 
-    SpotLight sampleSpotLight;
-    sampleSpotLight.Ambient = Vec3(0.2f, 0.2f, 0.2f);
-    sampleSpotLight.Diffuse = Vec3(0.8f, 0.8f, 0.8f);
-    sampleSpotLight.Specular = Vec3(1.0f, 1.0f, 1.0f);
-    sampleSpotLight.Constant = 1.0f;
-    sampleSpotLight.Linear = 0.09f;
-    sampleSpotLight.Quadratic = 0.032f;
-    sampleSpotLight.Enabled = true;
-    sampleSpotLight.Intensity = 1.0f;
-    sampleSpotLight.Direction = Vec3(0.3f, -1.0f, 0.0f);
-    sampleSpotLight.Position = Vec3(-2.0f, 1.0f, 0.0f);
-    sampleSpotLight.InnerCutoff = glm::radians(12.5f);
-    sampleSpotLight.OuterCutoff = glm::radians(17.5f);
+    // PointLight samplePointLight{};
+    // samplePointLight.Ambient = Vec3(0.0f);
+    // samplePointLight.Diffuse = Vec3(0.8f, 0.8f, 0.8f);
+    // samplePointLight.Specular = Vec3(1.0f);
+    // samplePointLight.Constant = 1.0f;
+    // samplePointLight.Linear = 0.09f;
+    // samplePointLight.Quadratic = 0.032f;
+    // samplePointLight.Enabled = true;
+    // samplePointLight.Intensity = 1.0f;
+    // samplePointLight.FarPlane = 25.0f;
+    // samplePointLight.Position = Vec3(3.0f, 0.0f, 0.0f);
 
-    Renderer::Lights.AddLight(sampleSpotLight, {true});
+    // Renderer::Lights.AddLight(samplePointLight, {true});
+
+    // samplePointLight = PointLight{};
+    // sampleDirectionalLight.Ambient = Vec3(0.0f, 0.0f, 0.0f);
+    // sampleDirectionalLight.Diffuse = Vec3(0.0f, 0.5f, 0.0f);
+    // sampleDirectionalLight.Specular = Vec3(0.0f, 1.0f, 0.0f);
+    // samplePointLight.Constant = 1.0f;
+    // samplePointLight.Linear = 0.09f;
+    // samplePointLight.Quadratic = 0.032f;
+    // samplePointLight.Enabled = true;
+    // samplePointLight.Intensity = 1.0f;
+    // samplePointLight.FarPlane = 25.0f;
+    // samplePointLight.Position = Vec3(-3.0f, -1.0f, 0.0f);
+
+    // Renderer::Lights.AddLight(samplePointLight, {true});
+
+    // SpotLight sampleSpotLight{};
+    // sampleSpotLight.Ambient = Vec3(0.0f);
+    // sampleSpotLight.Diffuse = Vec3(0.8f);
+    // sampleSpotLight.Specular = Vec3(1.0f);
+    // sampleSpotLight.Constant = 1.0f;
+    // sampleSpotLight.Linear = 0.09f;
+    // sampleSpotLight.Quadratic = 0.032f;
+    // sampleSpotLight.Enabled = true;
+    // sampleSpotLight.Intensity = 1.0f;
+    // sampleSpotLight.Direction = Vec3(0.3f, -1.0f, 0.0f);
+    // sampleSpotLight.Position = Vec3(-2.0f, 1.0f, 0.0f);
+    // sampleSpotLight.InnerCutoff = glm::radians(12.5f);
+    // sampleSpotLight.OuterCutoff = glm::radians(17.5f);
+
+    // Renderer::Lights.AddLight(sampleSpotLight, {true});
+
+    // sampleSpotLight = SpotLight{};
+    // sampleDirectionalLight.Ambient = Vec3(0.0f);
+    // sampleDirectionalLight.Diffuse = Vec3(0.0f, 0.0f, 0.5f);
+    // sampleDirectionalLight.Specular = Vec3(0.0f, 0.0f, 1.0f);
+    // sampleSpotLight.Constant = 1.0f;
+    // sampleSpotLight.Linear = 0.09f;
+    // sampleSpotLight.Quadratic = 0.032f;
+    // sampleSpotLight.Enabled = true;
+    // sampleSpotLight.Intensity = 1.0f;
+    // sampleSpotLight.Direction = Vec3(0.3f, -1.0f, 0.0f);
+    // sampleSpotLight.Position = Vec3(4.0f, -1.0f, -1.0f);
+    // sampleSpotLight.InnerCutoff = glm::radians(12.5f);
+    // sampleSpotLight.OuterCutoff = glm::radians(17.5f);
+
+    // Renderer::Lights.AddLight(sampleSpotLight, {true});
 #pragma endregion Light Setup
   }
 
