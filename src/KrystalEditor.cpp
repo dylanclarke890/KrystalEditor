@@ -120,7 +120,6 @@ namespace Krys
     samplePointLight.Quadratic = 0.032f;
     samplePointLight.Enabled = true;
     samplePointLight.Intensity = 1.0f;
-    samplePointLight.FarPlane = 25.0f;
     samplePointLight.Position = Vec3(3.0f, 0.0f, 0.0f);
 
     Renderer::Lights.AddLight(samplePointLight, {true});
@@ -134,7 +133,6 @@ namespace Krys
     samplePointLight.Quadratic = 0.032f;
     samplePointLight.Enabled = true;
     samplePointLight.Intensity = 1.0f;
-    samplePointLight.FarPlane = 25.0f;
     samplePointLight.Position = Vec3(-3.0f, -1.0f, 0.0f);
 
     Renderer::Lights.AddLight(samplePointLight, {true});
