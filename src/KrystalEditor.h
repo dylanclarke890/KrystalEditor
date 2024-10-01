@@ -5,8 +5,6 @@
 #include <Graphics/Framebuffer.h>
 #include <Graphics/Transform.h>
 
-#include <unordered_map>
-
 namespace Krys
 {
   class KrystalEditor : public Application
@@ -15,18 +13,18 @@ namespace Krys
       Ref<Camera> Camera;
       Ref<Controller> CameraController;
 
-      std::unordered_map<string, Ref<VertexArray>> VertexArrays;
-      std::unordered_map<string, Ref<VertexBuffer>> VertexBuffers;
-      std::unordered_map<string, Ref<UniformBuffer>> UniformBuffers;
-      std::unordered_map<string, Ref<IndexBuffer>> IndexBuffers;
-      std::unordered_map<string, Ref<InstanceArrayBuffer>> InstanceArrayBuffers;
-      std::unordered_map<string, Ref<Framebuffer>> Framebuffers;
-      std::unordered_map<string, Ref<Shader>> Shaders;
-      std::unordered_map<string, Ref<Texture2D>> Textures;
-      std::unordered_map<string, Ref<TextureCubemap>> Cubemaps;
-      std::unordered_map<string, Ref<Model>> Models;
-      std::unordered_map<string, Ref<Material>> Materials;
-      std::unordered_map<string, Ref<Transform>> Transforms;
+      Map<string, Ref<VertexArray>> VertexArrays;
+      Map<string, Ref<VertexBuffer>> VertexBuffers;
+      Map<string, Ref<UniformBuffer>> UniformBuffers;
+      Map<string, Ref<IndexBuffer>> IndexBuffers;
+      Map<string, Ref<InstanceArrayBuffer>> InstanceArrayBuffers;
+      Map<string, Ref<Framebuffer>> Framebuffers;
+      Map<string, Ref<Shader>> Shaders;
+      Map<string, Ref<Texture2D>> Textures;
+      Map<string, Ref<TextureCubemap>> Cubemaps;
+      Map<string, Ref<Model>> Models;
+      Map<string, Ref<Material>> Materials;
+      Map<string, Ref<Transform>> Transforms;
 
     public:
       KrystalEditor();
