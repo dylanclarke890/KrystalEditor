@@ -109,7 +109,7 @@ namespace Krys
     sampleDirectionalLight.Intensity = 1.0f;
     sampleDirectionalLight.Direction = Vec3(0.1f, -1.0f, 0.0f);
 
-    Renderer::Lights.AddLight(sampleDirectionalLight, {true});
+    // Renderer::Lights.AddLight(sampleDirectionalLight, {true});
 
     PointLight samplePointLight{};
     samplePointLight.Ambient = Vec3(0.0f);
@@ -122,7 +122,7 @@ namespace Krys
     samplePointLight.Intensity = 1.0f;
     samplePointLight.Position = Vec3(3.0f, 0.0f, 0.0f);
 
-    Renderer::Lights.AddLight(samplePointLight, {true});
+    // Renderer::Lights.AddLight(samplePointLight, {true});
 
     samplePointLight = PointLight{};
     samplePointLight.Ambient = Vec3(0.0f, 0.0f, 0.0f);
@@ -135,7 +135,7 @@ namespace Krys
     samplePointLight.Intensity = 1.0f;
     samplePointLight.Position = Vec3(-3.0f, -1.0f, 0.0f);
 
-    Renderer::Lights.AddLight(samplePointLight, {true});
+    // Renderer::Lights.AddLight(samplePointLight, {true});
 
     SpotLight sampleSpotLight{};
     sampleSpotLight.Ambient = Vec3(0.0f);
@@ -151,7 +151,7 @@ namespace Krys
     sampleSpotLight.InnerCutoff = glm::radians(12.5f);
     sampleSpotLight.OuterCutoff = glm::radians(17.5f);
 
-    Renderer::Lights.AddLight(sampleSpotLight, {true});
+    // Renderer::Lights.AddLight(sampleSpotLight, {true});
 
     sampleSpotLight = SpotLight{};
     sampleSpotLight.Ambient = Vec3(0.0f);
@@ -167,7 +167,7 @@ namespace Krys
     sampleSpotLight.InnerCutoff = glm::radians(12.5f);
     sampleSpotLight.OuterCutoff = glm::radians(17.5f);
 
-    Renderer::Lights.AddLight(sampleSpotLight, {true});
+    // Renderer::Lights.AddLight(sampleSpotLight, {true});
 #pragma endregion Light Setup
   }
 
