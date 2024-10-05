@@ -22,6 +22,7 @@ set editor_include_directories=^
 /I "K:\src\Core" ^
 /I "K:\src\Platform" ^
 /I "K:\src\ThirdParty\assimp\include" ^
+/I "K:\src\ThirdParty\rapidjson\include" ^
 /I "K:\src\ThirdParty\Glad\include" ^
 /I "K:\src\ThirdParty\glm" ^
 /I "K:\src\ThirdParty\stb"

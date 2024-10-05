@@ -4,6 +4,7 @@
 #include <Graphics/Colors.h>
 
 #include <IO/IO.h>
+#include <Assets/Factory.h>
 
 #include <Misc/Performance.h>
 #include <Misc/Time.h>
@@ -46,6 +47,8 @@ namespace Krys
     cameraController->SetSpeed(10.0f);
     CameraController = cameraController;
 
+#pragma region Resource Creation
+
     Textures["crate"] = Context->CreateTexture2D("textures/crate.png");
     Textures["crate-specular"] = Context->CreateTexture2D("textures/crate-specular.png");
 
@@ -86,6 +89,7 @@ namespace Krys
     //                      "cubemaps/space-skybox/bottom.png",
     //                      "cubemaps/space-skybox/front.png",
     //                      "cubemaps/space-skybox/back.png"});
+#pragma endregion Resource Creation
 
 #pragma region Light Setup
     Renderer::Lights.EnableLighting();
@@ -169,6 +173,9 @@ namespace Krys
 
     // Renderer::Lights.AddLight(sampleSpotLight, {true});
 #pragma endregion Light Setup
+
+    auto importer = Assets::Factory::CreateImporter("models/Mannequin.glb");
+    importer->Parse();
   }
 
   void KrystalEditor::Update(float dt)
