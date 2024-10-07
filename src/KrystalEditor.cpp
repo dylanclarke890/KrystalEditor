@@ -4,7 +4,6 @@
 #include <Graphics/Colors.h>
 
 #include <IO/IO.h>
-#include <Assets/Factory.h>
 
 #include <Misc/Performance.h>
 #include <Misc/Time.h>
@@ -20,16 +19,13 @@ namespace Krys
         Camera(nullptr), CameraController(nullptr),
         VertexArrays({}), UniformBuffers({}), VertexBuffers({}), IndexBuffers({}),
         InstanceArrayBuffers({}), Framebuffers({}), Shaders({}), Textures({}), Cubemaps({}),
-        Models({}), Materials({}), Transforms({})
+        Materials({}), Transforms({})
   {
   }
 
   void KrystalEditor::Startup()
   {
     Application::Startup();
-
-    Renderer::Init(Window, Context);
-    Renderer::SetPostProcessingEnabled(true);
 
     Random::Init();
 
@@ -64,22 +60,27 @@ namespace Krys
     Textures["toy-box-normal"] = Context->CreateTexture2D("textures/toy-box-normal.png");
     Textures["toy-box-displacement"] = Context->CreateTexture2D("textures/toy-box-displacement.png");
 
-    Materials["crate"] = CreateRef<Material>(Textures["crate"]);
-    Materials["crate"]->Specular = Textures["crate-specular"];
+    Materials["crate"] = CreateRef<Material>();
+    Materials["crate"]->DiffuseMap = Textures["crate"];
+    Materials["crate"]->SpecularMap = Textures["crate-specular"];
     Materials["crate"]->Shininess = 32.0f;
 
-    Materials["stage"] = CreateRef<Material>(Textures["brickwall"]);
-    Materials["stage"]->Normal = Textures["brickwall-normal"];
+    Materials["stage"] = CreateRef<Material>();
+    Materials["stage"]->DiffuseMap = Textures["brickwall"];
+    Materials["stage"]->NormalMap = Textures["brickwall-normal"];
     Materials["stage"]->Shininess = 1.0f;
 
-    Materials["red-bricks"] = CreateRef<Material>(Textures["red-bricks"]);
-    Materials["red-bricks"]->Normal = Textures["red-bricks-normal"];
-    Materials["red-bricks"]->Displacement = Textures["red-bricks-displacement"];
+    Materials["red-bricks"] = CreateRef<Material>();
+    Materials["red-bricks"]->DiffuseMap = Textures["red-bricks"];
+    Materials["red-bricks"]->NormalMap = Textures["red-bricks-normal"];
+    Materials["red-bricks"]->DisplacementMap = Textures["red-bricks-displacement"];
 
-    Materials["toy-box"] = CreateRef<Material>(Textures["wood"]);
+    Materials["toy-box"] = CreateRef<Material>();
+    Materials["toy-box"]->DiffuseMap = Textures["wood"];
     // Materials["toy-box"]->Normal = Textures["toy-box-normal"];
     // Materials["toy-box"]->Displacement = Textures["toy-box-displacement"];
 
+    Transforms["origin"] = CreateRef<Transform>(Vec3(0.0f), Vec3(1.0f));
     Transforms["stage"] = CreateRef<Transform>(Vec3(0.0f, -10.0f, 0.0f), Vec3(20.0f, 1.0f, 20.0f));
     Transforms["crate"] = CreateRef<Transform>(Vec3(0.0f, -6.0f, 0.0f), Vec3(1.0f), Vec3(0.0f));
     Transforms["square"] = CreateRef<Transform>(Vec3(0.0f, -4.0f, 0.0f), Vec3(5.0f, 1.0f, 5.0f), Vec3(0.0f));
@@ -91,124 +92,14 @@ namespace Krys
     //                      "cubemaps/space-skybox/back.png"});
 #pragma endregion Resource Creation
 
-#pragma region Light Setup
-    Renderer::Lights.EnableLighting();
-    Renderer::Lights.EnableShadows();
-
-    DirectionalLight sampleDirectionalLight{};
-    sampleDirectionalLight.Ambient = Vec3(0.2f);
-    sampleDirectionalLight.Diffuse = Vec3(0.5f);
-    sampleDirectionalLight.Specular = Vec3(1.0f);
-    sampleDirectionalLight.Enabled = true;
-    sampleDirectionalLight.Intensity = 1.0f;
-    sampleDirectionalLight.Direction = Vec3(0.0f, -1.0f, 0.0f);
-
-    Renderer::Lights.AddLight(sampleDirectionalLight, {true});
-
-    sampleDirectionalLight = DirectionalLight{};
-    sampleDirectionalLight.Ambient = Vec3(0.2f);
-    sampleDirectionalLight.Diffuse = Vec3(0.3f);
-    sampleDirectionalLight.Specular = Vec3(1.0f);
-    sampleDirectionalLight.Enabled = true;
-    sampleDirectionalLight.Intensity = 1.0f;
-    sampleDirectionalLight.Direction = Vec3(0.1f, -1.0f, 0.0f);
-
-    // Renderer::Lights.AddLight(sampleDirectionalLight, {true});
-
-    PointLight samplePointLight{};
-    samplePointLight.Ambient = Vec3(0.0f);
-    samplePointLight.Diffuse = Vec3(0.8f, 0.8f, 0.8f);
-    samplePointLight.Specular = Vec3(1.0f);
-    samplePointLight.Constant = 1.0f;
-    samplePointLight.Linear = 0.09f;
-    samplePointLight.Quadratic = 0.032f;
-    samplePointLight.Enabled = true;
-    samplePointLight.Intensity = 1.0f;
-    samplePointLight.Position = Vec3(3.0f, 0.0f, 0.0f);
-
-    // Renderer::Lights.AddLight(samplePointLight, {true});
-
-    samplePointLight = PointLight{};
-    samplePointLight.Ambient = Vec3(0.0f, 0.0f, 0.0f);
-    samplePointLight.Diffuse = Vec3(0.0f, 0.5f, 0.0f);
-    samplePointLight.Specular = Vec3(0.0f, 1.0f, 0.0f);
-    samplePointLight.Constant = 1.0f;
-    samplePointLight.Linear = 0.09f;
-    samplePointLight.Quadratic = 0.032f;
-    samplePointLight.Enabled = true;
-    samplePointLight.Intensity = 1.0f;
-    samplePointLight.Position = Vec3(-3.0f, -1.0f, 0.0f);
-
-    // Renderer::Lights.AddLight(samplePointLight, {true});
-
-    SpotLight sampleSpotLight{};
-    sampleSpotLight.Ambient = Vec3(0.0f);
-    sampleSpotLight.Diffuse = Vec3(0.4f);
-    sampleSpotLight.Specular = Vec3(1.0f);
-    sampleSpotLight.Constant = 1.0f;
-    sampleSpotLight.Linear = 0.09f;
-    sampleSpotLight.Quadratic = 0.032f;
-    sampleSpotLight.Enabled = true;
-    sampleSpotLight.Intensity = 1.0f;
-    sampleSpotLight.Direction = Vec3(0.3f, -1.0f, 0.0f);
-    sampleSpotLight.Position = Vec3(-2.0f, 1.0f, 0.0f);
-    sampleSpotLight.InnerCutoff = glm::radians(12.5f);
-    sampleSpotLight.OuterCutoff = glm::radians(17.5f);
-
-    // Renderer::Lights.AddLight(sampleSpotLight, {true});
-
-    sampleSpotLight = SpotLight{};
-    sampleSpotLight.Ambient = Vec3(0.0f);
-    sampleSpotLight.Diffuse = Vec3(0.5f);
-    sampleSpotLight.Specular = Vec3(1.0f);
-    sampleSpotLight.Constant = 1.0f;
-    sampleSpotLight.Linear = 0.09f;
-    sampleSpotLight.Quadratic = 0.032f;
-    sampleSpotLight.Enabled = true;
-    sampleSpotLight.Intensity = 1.0f;
-    sampleSpotLight.Direction = Vec3(-0.3f, -1.0f, 0.0f);
-    sampleSpotLight.Position = Vec3(2.0f, -1.0f, 0.0f);
-    sampleSpotLight.InnerCutoff = glm::radians(12.5f);
-    sampleSpotLight.OuterCutoff = glm::radians(17.5f);
-
-    // Renderer::Lights.AddLight(sampleSpotLight, {true});
-#pragma endregion Light Setup
-
-    auto importer = Assets::Factory::CreateImporter("models/Mannequin.glb");
-    importer->Parse();
+    // Models["Mannequin"] = Context->CreateModel("models/Mannequin.glb");
   }
 
   void KrystalEditor::Update(float dt)
   {
     KRYS_PERFORMANCE_TIMER("Frame");
-
     CameraController->OnUpdate(dt);
     Context->Clear(RenderBuffer::Color | RenderBuffer::Depth);
-
-    const float speed = 20.0f;
-    auto crateTransform = Transforms["crate"];
-
-    if (Input::IsKeyPressed(KeyCode::UpArrow))
-    {
-      crateTransform->Position.y += speed * dt;
-      Transforms["stage"]->Position.y += speed * dt;
-    }
-
-    if (Input::IsKeyPressed(KeyCode::DownArrow))
-    {
-      crateTransform->Position.y -= speed * dt;
-      Transforms["stage"]->Position.y -= speed * dt;
-    }
-
-    crateTransform->Rotation.x += speed * dt;
-    crateTransform->Rotation.y += speed * dt;
-
-    Renderer::BeginScene(Camera);
-    {
-      Renderer::DrawCube(crateTransform, Materials["crate"]);
-      Renderer::DrawCube(Transforms["stage"], Materials["toy-box"]);
-    }
-    Renderer::EndScene();
   }
 
   void KrystalEditor::OnEvent(Event &event)
@@ -253,7 +144,7 @@ namespace Krys
     case KeyCode::P:
     {
       useBlinn = !useBlinn;
-      Renderer::Lights.SetLightingModel(useBlinn ? LightingModel::BlinnPhong : LightingModel::Phong);
+      Renderer::SetLightingModel(useBlinn ? LightingModelType::BlinnPhong : LightingModelType::Phong);
       break;
     }
     case KeyCode::G:
@@ -277,7 +168,6 @@ namespace Krys
 
   void KrystalEditor::Shutdown()
   {
-    Renderer::Shutdown();
     Application::Shutdown();
   }
 }

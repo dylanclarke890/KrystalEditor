@@ -1,9 +1,8 @@
 #include <Engine.h>
 #include <Application.h>
 #include <Misc/Controller.h>
-#include <Graphics/Model.h>
 #include <Graphics/Framebuffer.h>
-#include <Graphics/Transform.h>
+#include <Graphics/Graphics.h>
 
 namespace Krys
 {
@@ -22,7 +21,6 @@ namespace Krys
       Map<string, Ref<Shader>> Shaders;
       Map<string, Ref<Texture2D>> Textures;
       Map<string, Ref<TextureCubemap>> Cubemaps;
-      Map<string, Ref<Model>> Models;
       Map<string, Ref<Material>> Materials;
       Map<string, Ref<Transform>> Transforms;
 
