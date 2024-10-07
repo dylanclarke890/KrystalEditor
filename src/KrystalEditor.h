@@ -23,6 +23,7 @@ namespace Krys
       Map<string, Ref<TextureCubemap>> Cubemaps;
       Map<string, Ref<Material>> Materials;
       Map<string, Ref<Transform>> Transforms;
+      Map<string, Ref<SceneObject>> Objects;
 
     public:
       KrystalEditor();

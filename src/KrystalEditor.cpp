@@ -60,22 +60,22 @@ namespace Krys
     Textures["toy-box-normal"] = Context->CreateTexture2D("textures/toy-box-normal.png");
     Textures["toy-box-displacement"] = Context->CreateTexture2D("textures/toy-box-displacement.png");
 
-    Materials["crate"] = CreateRef<Material>();
+    Materials["crate"] = Context->CreateMaterial();
     Materials["crate"]->DiffuseMap = Textures["crate"];
     Materials["crate"]->SpecularMap = Textures["crate-specular"];
     Materials["crate"]->Shininess = 32.0f;
 
-    Materials["stage"] = CreateRef<Material>();
+    Materials["stage"] = Context->CreateMaterial();
     Materials["stage"]->DiffuseMap = Textures["brickwall"];
     Materials["stage"]->NormalMap = Textures["brickwall-normal"];
     Materials["stage"]->Shininess = 1.0f;
 
-    Materials["red-bricks"] = CreateRef<Material>();
+    Materials["red-bricks"] = Context->CreateMaterial();
     Materials["red-bricks"]->DiffuseMap = Textures["red-bricks"];
     Materials["red-bricks"]->NormalMap = Textures["red-bricks-normal"];
     Materials["red-bricks"]->DisplacementMap = Textures["red-bricks-displacement"];
 
-    Materials["toy-box"] = CreateRef<Material>();
+    Materials["toy-box"] = Context->CreateMaterial();
     Materials["toy-box"]->DiffuseMap = Textures["wood"];
     // Materials["toy-box"]->Normal = Textures["toy-box-normal"];
     // Materials["toy-box"]->Displacement = Textures["toy-box-displacement"];
@@ -92,7 +92,7 @@ namespace Krys
     //                      "cubemaps/space-skybox/back.png"});
 #pragma endregion Resource Creation
 
-    // Models["Mannequin"] = Context->CreateModel("models/Mannequin.glb");
+    Objects["Mannequin"] = Context->CreateSceneObject("models/Mannequin.glb")[0];
   }
 
   void KrystalEditor::Update(float dt)
@@ -100,6 +100,10 @@ namespace Krys
     KRYS_PERFORMANCE_TIMER("Frame");
     CameraController->OnUpdate(dt);
     Context->Clear(RenderBuffer::Color | RenderBuffer::Depth);
+
+    Renderer::Begin(Camera);
+    Renderer::Draw(Objects["Mannequin"]);
+    Renderer::End();
   }
 
   void KrystalEditor::OnEvent(Event &event)
