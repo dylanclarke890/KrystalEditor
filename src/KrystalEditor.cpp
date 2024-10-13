@@ -1,114 +1,56 @@
-#include <Graphics/Renderer/Renderer.h>
-#include <Graphics/Camera/Orthographic.h>
-#include <Graphics/Camera/Perspective.h>
-#include <Graphics/Colors.h>
-
-#include <IO/IO.h>
-
-#include <Misc/Performance.h>
-#include <Misc/Time.h>
-#include <Misc/Chrono.h>
-#include <Misc/Random.h>
-
 #include "KrystalEditor.h"
+#include <Graphics/Camera/Perspective.h>
 
 namespace Krys
 {
-  KrystalEditor::KrystalEditor()
+  KrystalEditor::KrystalEditor() noexcept
       : Application("Krystal Editor", 1280, 720, 60.0f),
-        Camera(nullptr), CameraController(nullptr),
-        VertexArrays({}), UniformBuffers({}), VertexBuffers({}), IndexBuffers({}),
-        InstanceArrayBuffers({}), Framebuffers({}), Shaders({}), Textures({}), Cubemaps({}),
-        Materials({}), Transforms({})
+        _camera(nullptr), _cameraController(nullptr)
   {
   }
 
-  void KrystalEditor::Startup()
+  void KrystalEditor::Startup() noexcept
   {
     Application::Startup();
 
-    Random::Init();
+    _window->SetEventCallback(KRYS_BIND_EVENT_FN(KrystalEditor::OnEvent));
 
-    Window->SetEventCallback(KRYS_BIND_EVENT_FN(KrystalEditor::OnEvent));
+    _context->SetDepthTestingEnabled(true);
+    _context->SetDepthTestFunc(DepthTestFunc::Less);
+    _context->SetClearColor(Vec4(0.5f));
 
-    Context->SetDepthTestingEnabled(true);
-    Context->SetDepthTestFunc(DepthTestFunc::Less);
-    Context->SetClearColor(Vec4(0.5f));
-
-    auto camera = CreateRef<PerspectiveCamera>(Window->GetWidth(), Window->GetHeight(), 45.0f, 0.1f, 1000.0f);
+    auto camera = CreateRef<PerspectiveCamera>(_window->GetWidth(), _window->GetHeight(), 45.0f, 0.1f, 1000.0f);
     camera->SetPosition(Vec3(0.0f, 10.0f, 0.0f));
     camera->SetPitch(-90.0f);
-    Camera = camera;
+    _camera = camera;
     auto cameraController = CreateRef<PerspectiveCameraController>(camera);
     cameraController->SetSpeed(10.0f);
-    CameraController = cameraController;
-
-#pragma region Resource Creation
-
-    Textures["crate"] = Context->CreateTexture2D("textures/crate.png");
-    Textures["crate-specular"] = Context->CreateTexture2D("textures/crate-specular.png");
-
-    Textures["wood"] = Context->CreateTexture2D("textures/wood.png");
-
-    Textures["brickwall"] = Context->CreateTexture2D("textures/brickwall.jpg");
-    Textures["brickwall-normal"] = Context->CreateTexture2D("textures/brickwall-normal.jpg");
-
-    Textures["red-bricks"] = Context->CreateTexture2D("textures/red-bricks.jpg");
-    Textures["red-bricks-normal"] = Context->CreateTexture2D("textures/red-bricks-normal.jpg");
-    Textures["red-bricks-displacement"] = Context->CreateTexture2D("textures/red-bricks-displacement.jpg");
-
-    Textures["toy-box-normal"] = Context->CreateTexture2D("textures/toy-box-normal.png");
-    Textures["toy-box-displacement"] = Context->CreateTexture2D("textures/toy-box-displacement.png");
-
-    Materials["crate"] = Context->CreateMaterial();
-    Materials["crate"]->DiffuseMap = Textures["crate"];
-    Materials["crate"]->SpecularMap = Textures["crate-specular"];
-    Materials["crate"]->Shininess = 32.0f;
-
-    Materials["stage"] = Context->CreateMaterial();
-    Materials["stage"]->DiffuseMap = Textures["brickwall"];
-    Materials["stage"]->NormalMap = Textures["brickwall-normal"];
-    Materials["stage"]->Shininess = 1.0f;
-
-    Materials["red-bricks"] = Context->CreateMaterial();
-    Materials["red-bricks"]->DiffuseMap = Textures["red-bricks"];
-    Materials["red-bricks"]->NormalMap = Textures["red-bricks-normal"];
-    Materials["red-bricks"]->DisplacementMap = Textures["red-bricks-displacement"];
-
-    Materials["toy-box"] = Context->CreateMaterial();
-    Materials["toy-box"]->DiffuseMap = Textures["wood"];
-    // Materials["toy-box"]->Normal = Textures["toy-box-normal"];
-    // Materials["toy-box"]->Displacement = Textures["toy-box-displacement"];
-
-    Transforms["origin"] = CreateRef<Transform>(Vec3(0.0f), Vec3(1.0f));
-    Transforms["stage"] = CreateRef<Transform>(Vec3(0.0f, -10.0f, 0.0f), Vec3(20.0f, 1.0f, 20.0f));
-    Transforms["crate"] = CreateRef<Transform>(Vec3(0.0f, -6.0f, 0.0f), Vec3(1.0f), Vec3(0.0f));
-    Transforms["square"] = CreateRef<Transform>(Vec3(0.0f, -4.0f, 0.0f), Vec3(5.0f, 1.0f, 5.0f), Vec3(0.0f));
-    // Renderer::SetSkybox({"cubemaps/space-skybox/right.png",
-    //                      "cubemaps/space-skybox/left.png",
-    //                      "cubemaps/space-skybox/top.png",
-    //                      "cubemaps/space-skybox/bottom.png",
-    //                      "cubemaps/space-skybox/front.png",
-    //                      "cubemaps/space-skybox/back.png"});
-#pragma endregion Resource Creation
-
-    Objects["Mannequin"] = Context->CreateSceneObject("models/Mannequin.glb")[0];
+    _cameraController = cameraController;
   }
 
-  void KrystalEditor::Update(float dt)
+  void KrystalEditor::Shutdown() noexcept
   {
-    KRYS_PERFORMANCE_TIMER("Frame");
-    CameraController->OnUpdate(dt);
-    Context->Clear(RenderBuffer::Color | RenderBuffer::Depth);
-
-    Renderer::Begin(Camera);
-    Renderer::Draw(Objects["Mannequin"]);
-    Renderer::End();
+    Application::Shutdown();
   }
 
-  void KrystalEditor::OnEvent(Event &event)
+  void KrystalEditor::BeginFrame() noexcept
   {
-    CameraController->OnEvent(event);
+    Application::BeginFrame();
+  }
+
+  void KrystalEditor::Update(float dt) noexcept
+  {
+    Application::Update(dt);
+  }
+
+  void KrystalEditor::EndFrame() noexcept
+  {
+    Application::EndFrame();
+  }
+
+  void KrystalEditor::OnEvent(Event &event) noexcept
+  {
+    _cameraController->OnEvent(event);
 
     EventDispatcher dispatcher(event);
     dispatcher.Dispatch<KeyPressedEvent>(KRYS_BIND_EVENT_FN(KrystalEditor::OnKeyPressEvent));
@@ -116,17 +58,7 @@ namespace Krys
     Application::OnEvent(event);
   }
 
-  void Krys::KrystalEditor::BeginFrame()
-  {
-    Application::BeginFrame();
-  }
-
-  void Krys::KrystalEditor::EndFrame()
-  {
-    Application::EndFrame();
-  }
-
-  bool KrystalEditor::OnKeyPressEvent(KeyPressedEvent &event)
+  bool KrystalEditor::OnKeyPressEvent(KeyPressedEvent &event) noexcept
   {
     static bool useBlinn = false;
     static bool useSRGBFramebuffer = false;
@@ -137,7 +69,6 @@ namespace Krys
     case KeyCode::Space:
     {
       useWireframeMode = !useWireframeMode;
-      Renderer::SetWireFrameModeEnabled(useWireframeMode);
       break;
     }
     case KeyCode::Escape:
@@ -148,13 +79,12 @@ namespace Krys
     case KeyCode::P:
     {
       useBlinn = !useBlinn;
-      Renderer::SetLightingModel(useBlinn ? LightingModelType::BlinnPhong : LightingModelType::Phong);
       break;
     }
     case KeyCode::G:
     {
       useSRGBFramebuffer = !useSRGBFramebuffer;
-      Context->SetGammaCorrectionEnabled(useSRGBFramebuffer);
+      _context->SetGammaCorrectionEnabled(useSRGBFramebuffer);
       break;
     }
     default:
@@ -164,14 +94,9 @@ namespace Krys
     return false;
   }
 
-  bool KrystalEditor::OnShutdownEvent(ShutdownEvent &event)
+  bool KrystalEditor::OnShutdownEvent(ShutdownEvent &event) noexcept
   {
     Shutdown();
     return false;
-  }
-
-  void KrystalEditor::Shutdown()
-  {
-    Application::Shutdown();
   }
 }
