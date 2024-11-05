@@ -1,7 +1,8 @@
-#include <Engine.h>
 #include "KrystalEditor.h"
+#include <Core/Application.hpp>
 
 int main(int argc, char **argv)
 {
-  Krys::CreateEngine<Krys::KrystalEditor>()->Run();
+  auto app = Krys::Application::Create<Krys::KrystalEditor>(argc, argv, 1'280, 800);
+  app->Run();
 }
