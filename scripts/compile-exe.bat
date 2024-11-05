@@ -18,14 +18,8 @@ set editor_defines=^
 
 set editor_include_directories=^
 /I "B:\src" ^
-/I "K:\src" ^
-/I "K:\src\Core" ^
-/I "K:\src\Platform" ^
-/I "K:\src\ThirdParty\assimp\include" ^
-/I "K:\src\ThirdParty\rapidjson\include" ^
-/I "K:\src\ThirdParty\Glad\include" ^
-/I "K:\src\ThirdParty\glm" ^
-/I "K:\src\ThirdParty\stb"
+/I "K:\include" ^
+/I "K:\src\ThirdParty\Glad\include"
 
 set editor_source_files=^
 B:\src\Entry.cpp ^
@@ -33,8 +27,6 @@ B:\src\KrystalEditor.cpp
 
 set editor_linked_libs=^
 Krystal.lib ^
-zlibstaticd.lib ^
-assimpd.lib ^
 user32.lib ^
 gdi32.lib ^
 OpenGL32.lib ^
