@@ -1,3 +1,6 @@
-build
-.vscode
-data/log.txt
+# vscode
+/.vs
+/.vscode
+
+# temp data
+/build
