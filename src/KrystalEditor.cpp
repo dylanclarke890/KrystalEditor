@@ -1,10 +1,17 @@
-#include "KrystalEditor.h"
+#include "KrystalEditor.hpp"
+#include <Core/Events/KeyboardEvent.hpp>
 
 namespace Krys
 {
   KrystalEditor::KrystalEditor(Unique<ApplicationContext> context, uint32 width, uint32 height) noexcept
       : Application(std::move(context), width, height)
   {
+    _context->GetEventManager()->RegisterHandler<KeyboardEvent>(
+      [](const KeyboardEvent &event)
+      {
+        KRYS_LOG("key pressed %d", event.GetKey());
+        return false;
+      });
   }
 
   void KrystalEditor::Update(float dt) noexcept
