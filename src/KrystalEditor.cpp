@@ -1,5 +1,5 @@
 #include "KrystalEditor.hpp"
-#include <Core/Events/KeyboardEvent.hpp>
+#include <Core/Events/Input/KeyboardEvent.hpp>
 
 namespace Krys
 {
