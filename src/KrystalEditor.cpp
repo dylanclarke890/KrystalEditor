@@ -14,7 +14,7 @@ namespace Krys
       });
   }
 
-  void KrystalEditor::Update(float dt) noexcept
+  void KrystalEditor::Update(float) noexcept
   {
   }
 }
