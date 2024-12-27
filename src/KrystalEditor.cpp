@@ -1,12 +1,11 @@
 #include "KrystalEditor.hpp"
 #include <Core/Debug/Macros.hpp>
 #include <Core/Events/Input/KeyboardEvent.hpp>
-#include <IO/BinaryFileReader.hpp>
-#include <IO/BinaryFileWriter.hpp>
-#include <IO/Compression/HuffmanDecoder.hpp>
-#include <IO/Compression/HuffmanEncoder.hpp>
-#include <IO/Compression/HuffmanTree.hpp>
+#include <IO/Compression/Huffman.hpp>
+#include <IO/DataFlow.hpp>
 #include <IO/IO.hpp>
+#include <IO/Readers/BinaryFileReader.hpp>
+#include <IO/Writers/BinaryFileWriter.hpp>
 
 namespace Krys
 {
@@ -20,13 +19,20 @@ namespace Krys
         return false;
       });
 
-    using encoder_t = IO::HuffmanEncoder<uint16, Endian::Type::System>;
-    using decoder_t = IO::HuffmanDecoder<uint16, Endian::Type::System>;
+    using namespace IO::Stage;
+    using data_src_t = IO::BinaryFileReader<Endian::Type::System, Endian::Type::System>;
+    using data_dst_t = IO::BinaryFileWriter<Endian::Type::System, Endian::Type::System>;
+    using data_flow_t = IO::DataFlow<data_src_t, data_dst_t>;
 
-    encoder_t encoder("./input.txt", "./encoded.txt");
-    encoder.Encode();
-    decoder_t decoder("./encoded.txt", "./decoded.txt", encoder.GetTree());
-    decoder.Decode();
+    using identity_t = Identity<List<byte>, List<byte>>;
+    using encoder_t = HuffmanEncoder<uint16, Endian::Type::System, Endian::Type::System>;
+    using decoder_t = HuffmanDecoder<uint16, Endian::Type::System, Endian::Type::System>;
+
+    data_src_t input("compress/input.txt");
+    data_dst_t output("compress/decoded.txt");
+
+    auto pipeline = data_flow_t(&input, &output) | encoder_t {} | decoder_t {};
+    pipeline.Execute();
 
     _running = false;
   }
