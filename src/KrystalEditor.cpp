@@ -35,19 +35,19 @@ namespace Krys
     using decoder_t = IO::Stage::RLEDecoder;
 
     // encode
-    // data_src_t input("compress/sample.txt");
+    // data_src_t input("compress/input.txt");
     // data_dst_t output("compress/encoded.txt");
     // auto pipeline = data_flow_t(&input, &output) | encoder_t {};
 
     // decode
-    // data_src_t input("compress/encoded.txt");
-    // data_dst_t output("compress/decoded.txt");
-    // auto pipeline = data_flow_t(&input, &output) | decoder_t {};
+    data_src_t input("compress/encoded.txt");
+    data_dst_t output("compress/decoded.txt");
+    auto pipeline = data_flow_t(&input, &output, 3) | decoder_t {};
 
     // both
-    data_src_t input("compress/sample.txt");
-    data_dst_t output("compress/decoded.txt");
-    auto pipeline = data_flow_t(&input, &output) | encoder_t {} | decoder_t {};
+    // data_src_t input("compress/input.txt");
+    // data_dst_t output("compress/decoded.txt");
+    // auto pipeline = data_flow_t(&input, &output) | encoder_t {} | decoder_t {};
 
     pipeline.Execute();
     _running = false;
