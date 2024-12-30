@@ -6,6 +6,7 @@
 #include <IO/DataFlow.hpp>
 #include <IO/IO.hpp>
 #include <IO/Readers/BinaryFileReader.hpp>
+#include <IO/Readers/MemoryReader.hpp>
 #include <IO/Writers/BinaryFileWriter.hpp>
 
 namespace Krys
@@ -20,36 +21,20 @@ namespace Krys
         return false;
       });
 
-    using data_src_t = IO::BinaryFileReader<Endian::Type::System, Endian::Type::System>;
+    using data_src_t = IO::MemoryReader<Endian::Type::System, Endian::Type::System>;
     using data_dst_t = IO::BinaryFileWriter<Endian::Type::System, Endian::Type::System>;
     using data_flow_t = IO::DataFlow<data_src_t, data_dst_t>;
 
     using identity_t = IO::Stage::Identity<List<byte>>;
 
-    // Huffman
-    // using encoder_t = IO::Stage::HuffmanEncoder<uint8, Endian::Type::System, Endian::Type::System>;
-    // using decoder_t = IO::Stage::HuffmanDecoder<uint8, Endian::Type::System, Endian::Type::System>;
+    List<byte> sampleData = {byte {72}, byte {101}, byte {108}, byte {108}, byte {111}, byte {32},
+                             byte {87}, byte {111}, byte {114}, byte {108}, byte {100}};
+    auto input = data_src_t(sampleData);
+    auto output = data_dst_t("./compress/decoded.txt");
 
-    // Run-length encoding
-    using encoder_t = IO::Stage::RLEEncoder;
-    using decoder_t = IO::Stage::RLEDecoder;
-
-    // encode
-    // data_src_t input("compress/input.txt");
-    // data_dst_t output("compress/encoded.txt");
-    // auto pipeline = data_flow_t(&input, &output) | encoder_t {};
-
-    // decode
-    data_src_t input("compress/encoded.txt");
-    data_dst_t output("compress/decoded.txt");
-    auto pipeline = data_flow_t(&input, &output, 3) | decoder_t {};
-
-    // both
-    // data_src_t input("compress/input.txt");
-    // data_dst_t output("compress/decoded.txt");
-    // auto pipeline = data_flow_t(&input, &output) | encoder_t {} | decoder_t {};
-
+    auto pipeline = data_flow_t(&input, &output) | identity_t {};
     pipeline.Execute();
+
     _running = false;
   }
 
