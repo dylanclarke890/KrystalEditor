@@ -1,7 +1,7 @@
 #include "KrystalEditor.hpp"
 #include <Core/Debug/Macros.hpp>
 #include <Core/Events/Input/KeyboardEvent.hpp>
-#include <Scripting/Syrk.hpp>
+#include <IO/Images/ImageLoader.hpp>
 
 namespace Krys
 {
@@ -15,8 +15,10 @@ namespace Krys
         return false;
       });
 
-    Scripting::Syrk syrk;
-    syrk.RunFile("scripts/test.syrk");
+    IO::ImageLoader<> loader("textures/brickwall.jpg");
+    auto result = loader.Load();
+
+    KRYS_ASSERT(result.has_value(), "Error: %s", result.error().c_str());
 
     _running = false;
   }
