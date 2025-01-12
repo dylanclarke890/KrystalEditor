@@ -1,11 +1,7 @@
 #include "KrystalEditor.hpp"
 #include <Core/Debug/Macros.hpp>
 #include <Core/Events/Input/KeyboardEvent.hpp>
-#include <IO/IO.hpp>
-#include <IO/Readers/BinaryFileReader.hpp>
-#include <IO/Readers/MemoryReader.hpp>
-#include <IO/Writers/BinaryFileWriter.hpp>
-#include <Scripting/Parser.hpp>
+#include <Scripting/Syrk.hpp>
 
 namespace Krys
 {
@@ -19,13 +15,8 @@ namespace Krys
         return false;
       });
 
-    using data_src_t = IO::BinaryFileReader<Endian::Type::System, Endian::Type::System>;
-    using data_dst_t = IO::BinaryFileWriter<Endian::Type::System, Endian::Type::System>;
-
-    data_src_t src {"./compress/input.txt"};
-    data_dst_t dst {"./compress/decoded.txt"};
-    Lang::Parser parser(src, dst);
-    parser.Parse();
+    Scripting::Syrk syrk;
+    syrk.RunFile("scripts/test.syrk");
 
     _running = false;
   }
