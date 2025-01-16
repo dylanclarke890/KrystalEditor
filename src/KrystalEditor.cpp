@@ -8,9 +8,8 @@
 
 namespace Krys
 {
-  KrystalEditor::KrystalEditor(Unique<ApplicationContext> context,
-                               const ApplicationSettings &settings) noexcept
-      : Application(std::move(context), settings), _game(CreateUnique<Pong>(_context.get()))
+  KrystalEditor::KrystalEditor(Unique<ApplicationContext> context) noexcept
+      : Application(std::move(context)), _game(CreateUnique<Pong>(_context.get()))
   {
     _context->GetEventManager()->RegisterHandler<KeyboardEvent>(
       [&](const KeyboardEvent &event)
@@ -32,6 +31,10 @@ namespace Krys
   }
 
   void KrystalEditor::Update(float) noexcept
+  {
+  }
+
+  void KrystalEditor::FixedUpdate(float) noexcept
   {
   }
 

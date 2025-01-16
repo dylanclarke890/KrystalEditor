@@ -7,10 +7,11 @@ namespace Krys
   class KrystalEditor : public Application
   {
   public:
-    KrystalEditor(Unique<ApplicationContext> context, const ApplicationSettings &settings) noexcept;
+    KrystalEditor(Unique<ApplicationContext> context) noexcept;
     ~KrystalEditor() noexcept override = default;
 
     void Update(float dt) noexcept override;
+    void FixedUpdate(float dt) noexcept override;
     void Render() noexcept override;
 
   private:
