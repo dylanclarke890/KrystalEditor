@@ -1,6 +1,7 @@
 #include "KrystalEditor.hpp"
 #include <Core/Debug/Macros.hpp>
 #include <Core/Events/Input/KeyboardEvent.hpp>
+#include <Core/Events/QuitEvent.hpp>
 #include <Core/Logger.hpp>
 #include <Graphics/Colors.hpp>
 #include <IO/IO.hpp>
@@ -84,6 +85,13 @@ namespace Krys
         }
 
         return false;
+      });
+
+    eventManager->RegisterHandler<QuitEvent>(
+      [&](const QuitEvent &)
+      {
+        _running = false;
+        return true;
       });
   }
 }
