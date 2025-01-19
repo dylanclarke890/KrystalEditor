@@ -9,49 +9,27 @@
 
 namespace Krys
 {
-  Gfx::VertexBufferHandle triangleBufferHandle;
-  Gfx::PipelineHandle trianglePipelineHandle;
-
-  static Gfx::ShaderHandle LoadShader(Ptr<Gfx::GraphicsContext> context, Gfx::ShaderStage stage,
-                                      const string &filepath) noexcept
-  {
-    auto source = IO::ReadFileText(filepath);
-    auto shaderDescription = Gfx::ShaderDescription {stage, source};
-    auto shader = context->CreateShader(shaderDescription);
-    return shader;
-  }
+  Unique<Gfx::Mesh> triangleMesh;
+  Gfx::PipelineHandle triangleShader;
 
   KrystalEditor::KrystalEditor(Unique<ApplicationContext> context) noexcept
       : Application(std::move(context)), _game(CreateUnique<Pong>(_context.get()))
   {
-    _context->GetEventManager()->RegisterHandler<KeyboardEvent>(
-      [&](const KeyboardEvent &event)
-      {
-        Logger::Info("Key pressed: {0}", event.GetKey());
-
-        if (event.GetKey() == Key::ESCAPE)
-        {
-          _running = false;
-          return true;
-        }
-
-        return false;
-      });
+    BindEvents();
 
     auto graphicsContext = _context->GetGraphicsContext();
     graphicsContext->SetClearColor(Colors::Olive);
 
-    float vertices[] = {-0.5f, -0.5f, 0.0f, 0.5f, -0.5f, 0.0f, 0.0f, 0.5f, 0.0f};
-    triangleBufferHandle = graphicsContext->CreateVertexBuffer(sizeof(vertices));
+    triangleMesh = _context->GetMeshManager()->CreateMesh(
+      {{Vec3 {-0.5f, -0.5f, 0.0f}}, {Vec3 {0.5f, -0.5f, 0.0f}}, {Vec3 {0.0f, 0.5f, 0.0f}}}, {0, 1, 2});
 
-    auto &buffer = graphicsContext->GetVertexBuffer(triangleBufferHandle);
-    buffer.SetData(vertices, sizeof(vertices));
+    auto vertexShader = graphicsContext->CreateShader(
+      Gfx::ShaderDescription {Gfx::ShaderStage::Vertex, IO::ReadFileText("shaders/triangle.vert")});
+    auto fragmentShader = graphicsContext->CreateShader(
+      Gfx::ShaderDescription {Gfx::ShaderStage::Fragment, IO::ReadFileText("shaders/triangle.frag")});
 
-    auto vertexShader = LoadShader(graphicsContext, Gfx::ShaderStage::Vertex, "shaders/triangle.vert");
-    auto fragmentShader = LoadShader(graphicsContext, Gfx::ShaderStage::Fragment, "shaders/triangle.frag");
-
-    trianglePipelineHandle = graphicsContext->CreatePipeline();
-    auto &pipeline = graphicsContext->GetPipeline(trianglePipelineHandle);
+    triangleShader = graphicsContext->CreatePipeline();
+    auto &pipeline = graphicsContext->GetPipeline(triangleShader);
 
     pipeline.AddShader(vertexShader);
     pipeline.AddShader(fragmentShader);
@@ -72,8 +50,35 @@ namespace Krys
   {
     using namespace Gfx;
 
+    auto renderer = _context->GetRenderer();
+
+    {
+      RenderCommand command;
+      command.Pipeline = triangleShader;
+      command.Mesh = triangleMesh.get();
+      renderer->Submit(command);
+    }
+
     auto ctx = _context->GetGraphicsContext();
     ctx->Clear();
-    ctx->DrawArrays(trianglePipelineHandle, triangleBufferHandle, PrimitiveType::Triangles, 0, 3);
+    renderer->Execute(ctx);
+  }
+
+  void KrystalEditor::BindEvents() noexcept
+  {
+    auto eventManager = _context->GetEventManager();
+    eventManager->RegisterHandler<KeyboardEvent>(
+      [&](const KeyboardEvent &event)
+      {
+        Logger::Info("Key pressed: {0}", event.GetKey());
+
+        if (event.GetKey() == Key::ESCAPE)
+        {
+          _running = false;
+          return true;
+        }
+
+        return false;
+      });
   }
 }

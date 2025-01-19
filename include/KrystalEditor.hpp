@@ -15,6 +15,8 @@ namespace Krys
     void Render() noexcept override;
 
   private:
+    void BindEvents() noexcept;
+
     Unique<Game> _game;
   };
 }
