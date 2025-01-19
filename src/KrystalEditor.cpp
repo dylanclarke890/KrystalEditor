@@ -38,6 +38,11 @@ namespace Krys
     KRYS_ASSERT(pipeline.IsValid(), "Pipeline is not valid");
   }
 
+  KrystalEditor::~KrystalEditor() noexcept
+  {
+    triangleMesh.reset();
+  }
+
   void KrystalEditor::Update(float) noexcept
   {
   }

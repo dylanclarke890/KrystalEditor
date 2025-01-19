@@ -8,7 +8,7 @@ namespace Krys
   {
   public:
     KrystalEditor(Unique<ApplicationContext> context) noexcept;
-    ~KrystalEditor() noexcept override = default;
+    ~KrystalEditor() noexcept override;
 
     void Update(float dt) noexcept override;
     void FixedUpdate(float dt) noexcept override;
