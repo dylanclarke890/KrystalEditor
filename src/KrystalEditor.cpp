@@ -4,7 +4,7 @@
 #include <Core/Events/QuitEvent.hpp>
 #include <Core/Logger.hpp>
 #include <Core/Platform.hpp>
-#include <Graphics/Colors.hpp>
+#include <Graphics/Colours.hpp>
 
 #include <IO/IO.hpp>
 
@@ -22,10 +22,16 @@ namespace Krys
     BindEvents();
 
     auto graphicsContext = _context->GetGraphicsContext();
-    graphicsContext->SetClearColor(Colors::Olive);
+    graphicsContext->SetClearColour(Gfx::Colours::Coral);
 
-    _triangleMesh = _context->GetMeshManager()->CreateMesh(
-      {{Vec3 {-0.5f, -0.5f, 0.0f}}, {Vec3 {0.5f, -0.5f, 0.0f}}, {Vec3 {0.0f, 0.5f, 0.0f}}}, {0, 1, 2});
+    {
+      using namespace Gfx;
+      _triangleMesh =
+        _context->GetMeshManager()->CreateMesh({VertexData {Vec3 {-0.5f, -0.5f, 0.0f}, Colours::Cyan},
+                                                VertexData {Vec3 {0.5f, -0.5f, 0.0f}, Colours::Beige},
+                                                VertexData {Vec3 {0.0f, 0.5f, 0.0f}, Colours::Red}},
+                                               {0, 1, 2});
+    }
 
     auto vertexShader = graphicsContext->CreateShader(
       Gfx::ShaderDescription {Gfx::ShaderStage::Vertex, IO::ReadFileText("shaders/triangle.vert")});
@@ -41,7 +47,7 @@ namespace Krys
 
     KRYS_ASSERT(pipeline.IsValid(), "Pipeline is not valid");
 
-    _timeUniform = Gfx::OpenGL::OpenGLUniform<float32>(_triangleShader, "u_Time");
+    // _timeUniform = Gfx::OpenGL::OpenGLUniform<float32>(_triangleShader, "u_Time");
   }
 
   void KrystalEditor::OnShutdown() noexcept
@@ -54,10 +60,10 @@ namespace Krys
 
     auto renderer = _context->GetRenderer();
 
-    {
-      auto time = Platform::GetTime();
-      _timeUniform.SetValue(time);
-    }
+    // {
+    //   auto time = Platform::GetTime();
+    //   _timeUniform.SetValue(time);
+    // }
 
     {
       RenderCommand command;
