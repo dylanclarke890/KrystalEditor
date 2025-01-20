@@ -3,25 +3,28 @@
 #include <Core/Events/Input/KeyboardEvent.hpp>
 #include <Core/Events/QuitEvent.hpp>
 #include <Core/Logger.hpp>
+#include <Core/Platform.hpp>
 #include <Graphics/Colors.hpp>
+
 #include <IO/IO.hpp>
 
 #include "Pong.hpp"
 
 namespace Krys
 {
-  Unique<Gfx::Mesh> triangleMesh;
-  Gfx::PipelineHandle triangleShader;
-
   KrystalEditor::KrystalEditor(Unique<ApplicationContext> context) noexcept
       : Application(std::move(context)), _game(CreateUnique<Pong>(_context.get()))
+  {
+  }
+
+  void KrystalEditor::OnInit() noexcept
   {
     BindEvents();
 
     auto graphicsContext = _context->GetGraphicsContext();
     graphicsContext->SetClearColor(Colors::Olive);
 
-    triangleMesh = _context->GetMeshManager()->CreateMesh(
+    _triangleMesh = _context->GetMeshManager()->CreateMesh(
       {{Vec3 {-0.5f, -0.5f, 0.0f}}, {Vec3 {0.5f, -0.5f, 0.0f}}, {Vec3 {0.0f, 0.5f, 0.0f}}}, {0, 1, 2});
 
     auto vertexShader = graphicsContext->CreateShader(
@@ -29,45 +32,51 @@ namespace Krys
     auto fragmentShader = graphicsContext->CreateShader(
       Gfx::ShaderDescription {Gfx::ShaderStage::Fragment, IO::ReadFileText("shaders/triangle.frag")});
 
-    triangleShader = graphicsContext->CreatePipeline();
-    auto &pipeline = graphicsContext->GetPipeline(triangleShader);
+    _triangleShader = graphicsContext->CreatePipeline();
+    auto &pipeline = graphicsContext->GetPipeline(_triangleShader);
 
     pipeline.AddShader(vertexShader);
     pipeline.AddShader(fragmentShader);
     pipeline.Link();
 
     KRYS_ASSERT(pipeline.IsValid(), "Pipeline is not valid");
+
+    _timeUniform = Gfx::OpenGL::OpenGLUniform<float32>(_triangleShader, "u_Time");
   }
 
-  KrystalEditor::~KrystalEditor() noexcept
-  {
-    triangleMesh.reset();
-  }
-
-  void KrystalEditor::Update(float) noexcept
+  void KrystalEditor::OnShutdown() noexcept
   {
   }
 
-  void KrystalEditor::FixedUpdate(float) noexcept
-  {
-  }
-
-  void KrystalEditor::Render() noexcept
+  void KrystalEditor::OnRender() noexcept
   {
     using namespace Gfx;
 
     auto renderer = _context->GetRenderer();
 
     {
+      auto time = Platform::GetTime();
+      _timeUniform.SetValue(time);
+    }
+
+    {
       RenderCommand command;
-      command.Pipeline = triangleShader;
-      command.Mesh = triangleMesh.get();
+      command.Pipeline = _triangleShader;
+      command.Mesh = _triangleMesh;
       renderer->Submit(command);
     }
 
     auto ctx = _context->GetGraphicsContext();
     ctx->Clear();
     renderer->Execute(ctx);
+  }
+
+  void KrystalEditor::OnUpdate(float) noexcept
+  {
+  }
+
+  void KrystalEditor::OnFixedUpdate(float) noexcept
+  {
   }
 
   void KrystalEditor::BindEvents() noexcept

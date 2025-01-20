@@ -1,4 +1,9 @@
+#pragma once
+
+#include <Base/Types.hpp>
 #include <Core/Application.hpp>
+#include <Graphics/Handles.hpp>
+#include <Graphics/OpenGL/OpenGLUniform.hpp>
 
 #include "Game.hpp"
 
@@ -8,15 +13,20 @@ namespace Krys
   {
   public:
     KrystalEditor(Unique<ApplicationContext> context) noexcept;
-    ~KrystalEditor() noexcept override;
+    ~KrystalEditor() noexcept override = default;
 
-    void Update(float dt) noexcept override;
-    void FixedUpdate(float dt) noexcept override;
-    void Render() noexcept override;
+    void OnInit() noexcept override;
+    void OnUpdate(float dt) noexcept override;
+    void OnFixedUpdate(float dt) noexcept override;
+    void OnRender() noexcept override;
+    void OnShutdown() noexcept override;
 
   private:
     void BindEvents() noexcept;
 
     Unique<Game> _game;
+    Gfx::MeshHandle _triangleMesh;
+    Gfx::PipelineHandle _triangleShader;
+    Gfx::OpenGL::OpenGLUniform<float32> _timeUniform;
   };
 }
