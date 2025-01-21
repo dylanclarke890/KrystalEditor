@@ -5,7 +5,7 @@
 #include <Core/Logger.hpp>
 #include <Core/Platform.hpp>
 #include <Graphics/Colours.hpp>
-
+#include <IO/Images.hpp>
 #include <IO/IO.hpp>
 
 #include "Pong.hpp"
@@ -34,9 +34,9 @@ namespace Krys
     }
 
     auto vertexShader = graphicsContext->CreateShader(
-      Gfx::ShaderDescription {Gfx::ShaderStage::Vertex, IO::ReadFileText("shaders/triangle.vert")});
+      Gfx::ShaderDescriptor {Gfx::ShaderStage::Vertex, IO::ReadFileText("shaders/triangle.vert")});
     auto fragmentShader = graphicsContext->CreateShader(
-      Gfx::ShaderDescription {Gfx::ShaderStage::Fragment, IO::ReadFileText("shaders/triangle.frag")});
+      Gfx::ShaderDescriptor {Gfx::ShaderStage::Fragment, IO::ReadFileText("shaders/triangle.frag")});
 
     _triangleShader = graphicsContext->CreatePipeline();
     auto &pipeline = graphicsContext->GetPipeline(_triangleShader);
@@ -48,6 +48,9 @@ namespace Krys
     KRYS_ASSERT(pipeline.IsValid(), "Pipeline is not valid");
 
     // _timeUniform = Gfx::OpenGL::OpenGLUniform<float32>(_triangleShader, "u_Time");
+
+    auto result = IO::LoadImage("textures/tiles.jpg");
+    KRYS_ASSERT(result, "Failed to load image: {0}", result.error());
   }
 
   void KrystalEditor::OnShutdown() noexcept
