@@ -27,6 +27,7 @@ namespace Krys
     Unique<Game> _game;
     Gfx::MeshHandle _triangleMesh;
     Gfx::PipelineHandle _triangleShader;
-    Gfx::OpenGL::OpenGLUniform<float32> _timeUniform;
+    Gfx::TextureHandle _texture;
+    Gfx::OpenGL::OpenGLUniform<uint64> _textureUniform;
   };
 }

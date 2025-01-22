@@ -5,6 +5,7 @@
 #include <Core/Logger.hpp>
 #include <Core/Platform.hpp>
 #include <Graphics/Colours.hpp>
+#include <Graphics/OpenGL/OpenGLTexture.hpp>
 #include <IO/Images.hpp>
 #include <IO/IO.hpp>
 
@@ -26,11 +27,12 @@ namespace Krys
 
     {
       using namespace Gfx;
-      _triangleMesh =
-        _context->GetMeshManager()->CreateMesh({VertexData {Vec3 {-0.5f, -0.5f, 0.0f}, Colours::Cyan},
-                                                VertexData {Vec3 {0.5f, -0.5f, 0.0f}, Colours::Beige},
-                                                VertexData {Vec3 {0.0f, 0.5f, 0.0f}, Colours::Red}},
-                                               {0, 1, 2});
+      _triangleMesh = _context->GetMeshManager()->CreateMesh(
+        {VertexData {Vec3 {0.5f, 0.5f, 0.0f}, Colours::Cyan, Vec2 {1.0f, 1.0f}},
+         VertexData {Vec3 {0.5f, -0.5f, 0.0f}, Colours::Beige, Vec2 {1.0f, 0.0f}},
+         VertexData {Vec3 {-0.5f, -0.5f, 0.0f}, Colours::Red, Vec2 {0.0f, 0.0f}},
+         VertexData {Vec3 {-0.5f, 0.5f, 0.0f}, Colours::Green, Vec2 {0.0f, 1.0f}}},
+        {0, 1, 3, 1, 2, 3});
     }
 
     auto vertexShader = graphicsContext->CreateShader(
@@ -47,10 +49,13 @@ namespace Krys
 
     KRYS_ASSERT(pipeline.IsValid(), "Pipeline is not valid");
 
-    // _timeUniform = Gfx::OpenGL::OpenGLUniform<float32>(_triangleShader, "u_Time");
+    _texture = _context->GetTextureManager()->LoadTexture("textures/wood-wall.jpg");
 
-    auto result = IO::LoadImage("textures/tiles.jpg");
-    KRYS_ASSERT(result, "Failed to load image: {0}", result.error());
+    _textureUniform = Gfx::OpenGL::OpenGLUniform<uint64>(_triangleShader, "u_Texture");
+
+    auto &glTexture =
+      static_cast<Gfx::OpenGL::OpenGLTexture &>(_context->GetTextureManager()->GetTexture(_texture));
+    _textureUniform.SetValue(glTexture.GetNativeBindlessHandle());
   }
 
   void KrystalEditor::OnShutdown() noexcept
