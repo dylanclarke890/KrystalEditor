@@ -4,6 +4,7 @@
 #include <Core/Application.hpp>
 #include <Graphics/Handles.hpp>
 #include <Graphics/OpenGL/OpenGLUniform.hpp>
+#include <MTL/Matrices/Mat4x4.hpp>
 
 #include "Game.hpp"
 
@@ -29,5 +30,6 @@ namespace Krys
     Gfx::PipelineHandle _triangleShader;
     Gfx::TextureHandle _texture;
     Gfx::OpenGL::OpenGLUniform<uint64> _textureUniform;
+    Gfx::OpenGL::OpenGLUniform<Mat4> _transformUniform;
   };
 }

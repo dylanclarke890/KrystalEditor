@@ -8,6 +8,8 @@
 #include <Graphics/OpenGL/OpenGLTexture.hpp>
 #include <IO/Images.hpp>
 #include <IO/IO.hpp>
+#include <MTL/Common/Convert.hpp>
+#include <MTL/Matrices/Ext/Transformations.hpp>
 
 #include "Pong.hpp"
 
@@ -52,6 +54,7 @@ namespace Krys
     _texture = _context->GetTextureManager()->LoadTexture("textures/wood-wall.jpg");
 
     _textureUniform = Gfx::OpenGL::OpenGLUniform<uint64>(_triangleShader, "u_Texture");
+    _transformUniform = Gfx::OpenGL::OpenGLUniform<Mat4>(_triangleShader, "u_Transform");
 
     auto &glTexture =
       static_cast<Gfx::OpenGL::OpenGLTexture &>(_context->GetTextureManager()->GetTexture(_texture));
@@ -87,6 +90,11 @@ namespace Krys
 
   void KrystalEditor::OnUpdate(float) noexcept
   {
+    Mat4 trans = Mat4(1.0f);
+    trans = MTL::Rotate(trans, static_cast<float>(Platform::GetTime()), Vec3(0.0, 0.0, 1.0));
+    trans = MTL::Scale(trans, Vec3(0.5, 0.5, 0.5));
+
+    _transformUniform.SetValue(trans);
   }
 
   void KrystalEditor::OnFixedUpdate(float) noexcept
