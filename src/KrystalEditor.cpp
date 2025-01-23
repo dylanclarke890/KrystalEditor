@@ -16,7 +16,11 @@
 namespace Krys
 {
   KrystalEditor::KrystalEditor(Unique<ApplicationContext> context) noexcept
-      : Application(std::move(context)), _game(CreateUnique<Pong>(_context.get()))
+      : Application(std::move(context)), _game(CreateUnique<Pong>(_context.get())), _triangleMesh(),
+        _triangleShader(), _texture(),
+        _camera(Vec3(0.0f, 0.0f, 3.0f), Vec3(0.0f),
+                {_context->GetWindowManager()->GetCurrentWindow()->GetWidth(),
+                 _context->GetWindowManager()->GetCurrentWindow()->GetHeight()})
   {
   }
 
@@ -43,6 +47,7 @@ namespace Krys
       Gfx::ShaderDescriptor {Gfx::ShaderStage::Fragment, IO::ReadFileText("shaders/triangle.frag")});
 
     _triangleShader = graphicsContext->CreatePipeline();
+
     auto &pipeline = graphicsContext->GetPipeline(_triangleShader);
 
     pipeline.AddShader(vertexShader);
@@ -50,15 +55,13 @@ namespace Krys
     pipeline.Link();
 
     KRYS_ASSERT(pipeline.IsValid(), "Pipeline is not valid");
+    _uniforms = Uniforms(_triangleShader);
 
     _texture = _context->GetTextureManager()->LoadTexture("textures/wood-wall.jpg");
 
-    _textureUniform = Gfx::OpenGL::OpenGLUniform<uint64>(_triangleShader, "u_Texture");
-    _transformUniform = Gfx::OpenGL::OpenGLUniform<Mat4>(_triangleShader, "u_Transform");
-
     auto &glTexture =
       static_cast<Gfx::OpenGL::OpenGLTexture &>(_context->GetTextureManager()->GetTexture(_texture));
-    _textureUniform.SetValue(glTexture.GetNativeBindlessHandle());
+    _uniforms.Texture.SetValue(glTexture.GetNativeBindlessHandle());
   }
 
   void KrystalEditor::OnShutdown() noexcept
@@ -70,11 +73,6 @@ namespace Krys
     using namespace Gfx;
 
     auto renderer = _context->GetRenderer();
-
-    // {
-    //   auto time = Platform::GetTime();
-    //   _timeUniform.SetValue(time);
-    // }
 
     {
       RenderCommand command;
@@ -90,11 +88,22 @@ namespace Krys
 
   void KrystalEditor::OnUpdate(float) noexcept
   {
-    Mat4 trans = Mat4(1.0f);
-    trans = MTL::Rotate(trans, static_cast<float>(Platform::GetTime()), Vec3(0.0, 0.0, 1.0));
-    trans = MTL::Scale(trans, Vec3(0.5, 0.5, 0.5));
+    auto *input = _context->GetInputManager();
+    Logger::Info("Mouse delta: ({0}, {1})", input->GetMouse().DeltaX(), input->GetMouse().DeltaY());
 
-    _transformUniform.SetValue(trans);
+    if (input->GetMouse().IsButtonHeld(MouseButton::LEFT))
+    {
+      auto &mouse = input->GetMouse();
+      _camera.Update(mouse.DeltaX(), mouse.DeltaY());
+    }
+
+    Mat4 trans = Mat4(1.0f);
+    // trans = MTL::Rotate(trans, static_cast<float>(Platform::GetTime()), Vec3(0.0, 0.0, 1.0));
+    // trans = MTL::Scale(trans, Vec3(0.5, 0.5, 0.5));
+
+    _uniforms.Transform.SetValue(trans);
+    _uniforms.View.SetValue(_camera.GetCamera().GetView());
+    _uniforms.Projection.SetValue(_camera.GetCamera().GetProjection());
   }
 
   void KrystalEditor::OnFixedUpdate(float) noexcept
