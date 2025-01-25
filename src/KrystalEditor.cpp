@@ -17,7 +17,7 @@ namespace Krys
 {
   KrystalEditor::KrystalEditor(Unique<ApplicationContext> context) noexcept
       : Application(std::move(context)), _game(CreateUnique<Pong>(_context.get())), _cubeMesh(), _shader(),
-        _texture(), _camera(Gfx::CameraType::Perspective, 1'920, 1'080, 100)
+        _texture(), _camera(Gfx::CameraType::Perspective, 1'920, 1'080, 100, Vec3(0.0f), 10.0f)
   {
   }
 
@@ -81,7 +81,6 @@ namespace Krys
   void KrystalEditor::OnUpdate(float) noexcept
   {
     auto *input = _context->GetInputManager();
-    Logger::Info("Mouse delta: ({0}, {1})", input->GetMouse().DeltaX(), input->GetMouse().DeltaY());
 
     if (input->GetMouse().IsButtonHeld(MouseButton::LEFT))
     {
