@@ -43,8 +43,8 @@ namespace Krys
     void BindEvents() noexcept;
 
     Unique<Game> _game;
-    Gfx::MeshHandle _triangleMesh;
-    Gfx::PipelineHandle _triangleShader;
+    Gfx::MeshHandle _cubeMesh;
+    Gfx::PipelineHandle _shader;
     Gfx::TextureHandle _texture;
     Uniforms _uniforms;
     Gfx::ArcballCamera _camera;

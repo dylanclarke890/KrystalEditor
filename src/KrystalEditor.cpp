@@ -16,11 +16,8 @@
 namespace Krys
 {
   KrystalEditor::KrystalEditor(Unique<ApplicationContext> context) noexcept
-      : Application(std::move(context)), _game(CreateUnique<Pong>(_context.get())), _triangleMesh(),
-        _triangleShader(), _texture(),
-        _camera(Vec3(0.0f, 0.0f, 3.0f), Vec3(0.0f),
-                {_context->GetWindowManager()->GetCurrentWindow()->GetWidth(),
-                 _context->GetWindowManager()->GetCurrentWindow()->GetHeight()})
+      : Application(std::move(context)), _game(CreateUnique<Pong>(_context.get())), _cubeMesh(), _shader(),
+        _texture(), _camera(Gfx::CameraType::Perspective, 1'920, 1'080, 100)
   {
   }
 
@@ -29,16 +26,11 @@ namespace Krys
     BindEvents();
 
     auto graphicsContext = _context->GetGraphicsContext();
-    graphicsContext->SetClearColour(Gfx::Colours::Coral);
+    graphicsContext->SetClearColour(Gfx::Colours::Black);
 
     {
       using namespace Gfx;
-      _triangleMesh = _context->GetMeshManager()->CreateMesh(
-        {VertexData {Vec3 {0.5f, 0.5f, 0.0f}, Colours::Cyan, Vec2 {1.0f, 1.0f}},
-         VertexData {Vec3 {0.5f, -0.5f, 0.0f}, Colours::Beige, Vec2 {1.0f, 0.0f}},
-         VertexData {Vec3 {-0.5f, -0.5f, 0.0f}, Colours::Red, Vec2 {0.0f, 0.0f}},
-         VertexData {Vec3 {-0.5f, 0.5f, 0.0f}, Colours::Green, Vec2 {0.0f, 1.0f}}},
-        {0, 1, 3, 1, 2, 3});
+      _cubeMesh = _context->GetMeshManager()->CreateCube(Colours::White);
     }
 
     auto vertexShader = graphicsContext->CreateShader(
@@ -46,16 +38,16 @@ namespace Krys
     auto fragmentShader = graphicsContext->CreateShader(
       Gfx::ShaderDescriptor {Gfx::ShaderStage::Fragment, IO::ReadFileText("shaders/triangle.frag")});
 
-    _triangleShader = graphicsContext->CreatePipeline();
+    _shader = graphicsContext->CreatePipeline();
 
-    auto &pipeline = graphicsContext->GetPipeline(_triangleShader);
+    auto &pipeline = graphicsContext->GetPipeline(_shader);
 
     pipeline.AddShader(vertexShader);
     pipeline.AddShader(fragmentShader);
     pipeline.Link();
 
     KRYS_ASSERT(pipeline.IsValid(), "Pipeline is not valid");
-    _uniforms = Uniforms(_triangleShader);
+    _uniforms = Uniforms(_shader);
 
     _texture = _context->GetTextureManager()->LoadTexture("textures/wood-wall.jpg");
 
@@ -76,8 +68,8 @@ namespace Krys
 
     {
       RenderCommand command;
-      command.Pipeline = _triangleShader;
-      command.Mesh = _triangleMesh;
+      command.Pipeline = _shader;
+      command.Mesh = _cubeMesh;
       renderer->Submit(command);
     }
 
@@ -94,7 +86,7 @@ namespace Krys
     if (input->GetMouse().IsButtonHeld(MouseButton::LEFT))
     {
       auto &mouse = input->GetMouse();
-      _camera.Update(mouse.DeltaX(), mouse.DeltaY());
+      _camera.OnMouseDrag(mouse.DeltaX(), mouse.DeltaY());
     }
 
     Mat4 trans = Mat4(1.0f);
@@ -102,8 +94,8 @@ namespace Krys
     // trans = MTL::Scale(trans, Vec3(0.5, 0.5, 0.5));
 
     _uniforms.Transform.SetValue(trans);
-    _uniforms.View.SetValue(_camera.GetCamera().GetView());
-    _uniforms.Projection.SetValue(_camera.GetCamera().GetProjection());
+    _uniforms.View.SetValue(_camera.GetView());
+    _uniforms.Projection.SetValue(_camera.GetProjection());
   }
 
   void KrystalEditor::OnFixedUpdate(float) noexcept
