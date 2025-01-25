@@ -23,6 +23,9 @@ namespace Krys
 
   void KrystalEditor::OnInit() noexcept
   {
+    _context->GetWindowManager()->GetCurrentWindow()->ShowCursor(true);
+    _context->GetWindowManager()->GetCurrentWindow()->LockCursor(true);
+
     BindEvents();
 
     auto graphicsContext = _context->GetGraphicsContext();
@@ -80,6 +83,7 @@ namespace Krys
 
   void KrystalEditor::OnUpdate(float) noexcept
   {
+
     auto *input = _context->GetInputManager();
 
     if (input->GetMouse().IsButtonHeld(MouseButton::LEFT))
@@ -87,6 +91,7 @@ namespace Krys
       auto &mouse = input->GetMouse();
       _camera.OnMouseDrag(mouse.DeltaX(), mouse.DeltaY());
     }
+    // TODO: handle zoom
 
     Mat4 trans = Mat4(1.0f);
     // trans = MTL::Rotate(trans, static_cast<float>(Platform::GetTime()), Vec3(0.0, 0.0, 1.0));
