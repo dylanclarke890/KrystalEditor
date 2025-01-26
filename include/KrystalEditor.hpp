@@ -20,7 +20,7 @@ namespace Krys
 
     Uniforms() noexcept = default;
 
-    Uniforms(Gfx::PipelineHandle shader) noexcept
+    Uniforms(Gfx::ProgramHandle shader) noexcept
         : Texture(shader, "u_Texture"), Transform(shader, "u_Transform"), View(shader, "u_View"),
           Projection(shader, "u_Projection")
     {
@@ -44,7 +44,7 @@ namespace Krys
 
     Unique<Game> _game;
     Gfx::MeshHandle _cubeMesh;
-    Gfx::PipelineHandle _shader;
+    Gfx::ProgramHandle _shader;
     Gfx::TextureHandle _texture;
     Uniforms _uniforms;
     Gfx::ArcballCamera _camera;

@@ -44,13 +44,13 @@ namespace Krys
     auto fragmentShader = graphicsContext->CreateShader(
       Gfx::ShaderDescriptor {Gfx::ShaderStage::Fragment, IO::ReadFileText("shaders/triangle.frag")});
 
-    _shader = graphicsContext->CreatePipeline();
+    _shader = graphicsContext->CreateProgram();
     {
-      auto &pipeline = graphicsContext->GetPipeline(_shader);
-      pipeline.AddShader(vertexShader);
-      pipeline.AddShader(fragmentShader);
-      pipeline.Link();
-      KRYS_ASSERT(pipeline.IsValid(), "Pipeline is not valid");
+      auto &program = graphicsContext->GetProgram(_shader);
+      program.AddShader(vertexShader);
+      program.AddShader(fragmentShader);
+      program.Link();
+      KRYS_ASSERT(program.IsValid(), "Program is not valid");
     }
 
     _texture = _context->GetTextureManager()->LoadTexture("textures/wood-wall.jpg");
@@ -73,7 +73,7 @@ namespace Krys
 
     {
       RenderCommand command;
-      command.Pipeline = _shader;
+      command.Program = _shader;
       command.Mesh = _cubeMesh;
       renderer->Submit(command);
     }
