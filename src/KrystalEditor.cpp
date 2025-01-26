@@ -1,6 +1,7 @@
 #include "KrystalEditor.hpp"
 #include <Core/Debug/Macros.hpp>
 #include <Core/Events/Input/KeyboardEvent.hpp>
+#include <Core/Events/Input/MouseMoveEvent.hpp>
 #include <Core/Events/QuitEvent.hpp>
 #include <Core/Logger.hpp>
 #include <Core/Platform.hpp>
@@ -10,6 +11,7 @@
 #include <IO/IO.hpp>
 #include <MTL/Common/Convert.hpp>
 #include <MTL/Matrices/Ext/Transformations.hpp>
+#include <MTL/Vectors/Ext/Format.hpp>
 
 #include "Pong.hpp"
 
@@ -42,20 +44,19 @@ namespace Krys
       Gfx::ShaderDescriptor {Gfx::ShaderStage::Fragment, IO::ReadFileText("shaders/triangle.frag")});
 
     _shader = graphicsContext->CreatePipeline();
-
-    auto &pipeline = graphicsContext->GetPipeline(_shader);
-
-    pipeline.AddShader(vertexShader);
-    pipeline.AddShader(fragmentShader);
-    pipeline.Link();
-
-    KRYS_ASSERT(pipeline.IsValid(), "Pipeline is not valid");
-    _uniforms = Uniforms(_shader);
+    {
+      auto &pipeline = graphicsContext->GetPipeline(_shader);
+      pipeline.AddShader(vertexShader);
+      pipeline.AddShader(fragmentShader);
+      pipeline.Link();
+      KRYS_ASSERT(pipeline.IsValid(), "Pipeline is not valid");
+    }
 
     _texture = _context->GetTextureManager()->LoadTexture("textures/wood-wall.jpg");
-
     auto &glTexture =
       static_cast<Gfx::OpenGL::OpenGLTexture &>(_context->GetTextureManager()->GetTexture(_texture));
+
+    _uniforms = Uniforms(_shader);
     _uniforms.Texture.SetValue(glTexture.GetNativeBindlessHandle());
   }
 
@@ -85,7 +86,6 @@ namespace Krys
   {
 
     auto *input = _context->GetInputManager();
-
     if (input->GetMouse().IsButtonHeld(MouseButton::LEFT))
     {
       auto &mouse = input->GetMouse();
