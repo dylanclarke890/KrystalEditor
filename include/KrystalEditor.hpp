@@ -2,7 +2,7 @@
 
 #include <Base/Types.hpp>
 #include <Core/Application.hpp>
-#include <Graphics/ArcballCamera.hpp>
+#include <Graphics/Cameras/ArcballCamera.hpp>
 #include <Graphics/Handles.hpp>
 #include <Graphics/OpenGL/OpenGLUniform.hpp>
 #include <MTL/Matrices/Mat4x4.hpp>
