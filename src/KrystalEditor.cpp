@@ -2,6 +2,7 @@
 #include <Core/Debug/Macros.hpp>
 #include <Core/Events/Input/KeyboardEvent.hpp>
 #include <Core/Events/Input/MouseMoveEvent.hpp>
+#include <Core/Events/Input/ScrollWheelEvent.hpp>
 #include <Core/Events/QuitEvent.hpp>
 #include <Core/Logger.hpp>
 #include <Core/Platform.hpp>
@@ -84,14 +85,18 @@ namespace Krys
 
   void KrystalEditor::OnUpdate(float) noexcept
   {
-
     auto *input = _context->GetInputManager();
-    if (input->GetMouse().IsButtonHeld(MouseButton::LEFT))
+
+    if (input->GetMouse().IsButtonPressed(MouseButton::LEFT))
     {
       auto &mouse = input->GetMouse();
-      _camera.OnMouseDrag(mouse.DeltaX(), mouse.DeltaY());
+      _camera.OnMouseDragStart({mouse.GetClientX(), mouse.GetClientY()});
     }
-    // TODO: handle zoom
+    else if (input->GetMouse().IsButtonHeld(MouseButton::LEFT))
+    {
+      auto &mouse = input->GetMouse();
+      _camera.OnMouseDrag({mouse.GetClientX(), mouse.GetClientY()});
+    }
 
     Mat4 trans = Mat4(1.0f);
     // trans = MTL::Rotate(trans, static_cast<float>(Platform::GetTime()), Vec3(0.0, 0.0, 1.0));
@@ -128,6 +133,13 @@ namespace Krys
       {
         _running = false;
         return true;
+      });
+
+    eventManager->RegisterHandler<ScrollWheelEvent>(
+      [&](const ScrollWheelEvent &event)
+      {
+        _camera.Zoom(event.Delta());
+        return false;
       });
   }
 }
