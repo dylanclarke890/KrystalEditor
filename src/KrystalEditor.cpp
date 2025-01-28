@@ -27,6 +27,7 @@ namespace Krys
   void KrystalEditor::OnInit() noexcept
   {
     _context->GetWindowManager()->GetCurrentWindow()->ShowCursor(true);
+    // TODO: this doesn't seem to work
     _context->GetWindowManager()->GetCurrentWindow()->LockCursor(true);
 
     BindEvents();
@@ -39,25 +40,19 @@ namespace Krys
       _cubeMesh = _context->GetMeshManager()->CreateCube(Colours::White);
     }
 
-    auto vertexShader = graphicsContext->CreateShader(
-      Gfx::ShaderDescriptor {Gfx::ShaderStage::Vertex, IO::ReadFileText("shaders/triangle.vert")});
-    auto fragmentShader = graphicsContext->CreateShader(
-      Gfx::ShaderDescriptor {Gfx::ShaderStage::Fragment, IO::ReadFileText("shaders/triangle.frag")});
+    auto vertexShader =
+      graphicsContext->CreateShader(Gfx::ShaderStage::Vertex, IO::ReadFileText("shaders/triangle.vert"));
+    auto fragmentShader =
+      graphicsContext->CreateShader(Gfx::ShaderStage::Fragment, IO::ReadFileText("shaders/triangle.frag"));
 
-    _shader = graphicsContext->CreateProgram();
-    {
-      auto &program = graphicsContext->GetProgram(_shader);
-      program.AddShader(vertexShader);
-      program.AddShader(fragmentShader);
-      program.Link();
-      KRYS_ASSERT(program.IsValid(), "Program is not valid");
-    }
+    _shader = graphicsContext->CreateProgram(vertexShader, fragmentShader);
 
     _texture = _context->GetTextureManager()->LoadTexture("textures/wood-wall.jpg");
     auto &glTexture =
-      static_cast<Gfx::OpenGL::OpenGLTexture &>(_context->GetTextureManager()->GetTexture(_texture));
+      static_cast<Gfx::OpenGL::OpenGLTexture &>(*_context->GetTextureManager()->GetTexture(_texture));
 
-    _uniforms = Uniforms(_shader);
+    _uniforms = Uniforms(
+      static_cast<Gfx::OpenGL::OpenGLProgram &>(*_context->GetGraphicsContext()->GetProgram(_shader)));
     _uniforms.Texture.SetValue(glTexture.GetNativeBindlessHandle());
   }
 
@@ -79,7 +74,7 @@ namespace Krys
     }
 
     auto ctx = _context->GetGraphicsContext();
-    ctx->Clear();
+    ctx->Clear(ClearBuffer::Colour | ClearBuffer::Depth);
     renderer->Execute(ctx);
   }
 

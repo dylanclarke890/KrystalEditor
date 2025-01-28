@@ -4,7 +4,9 @@
 #include <Core/Application.hpp>
 #include <Graphics/Cameras/ArcballCamera.hpp>
 #include <Graphics/Handles.hpp>
+#include <Graphics/OpenGL/OpenGLProgram.hpp>
 #include <Graphics/OpenGL/OpenGLUniform.hpp>
+
 #include <MTL/Matrices/Mat4x4.hpp>
 
 #include "Game.hpp"
@@ -20,9 +22,11 @@ namespace Krys
 
     Uniforms() noexcept = default;
 
-    Uniforms(Gfx::ProgramHandle shader) noexcept
-        : Texture(shader, "u_Texture"), Transform(shader, "u_Transform"), View(shader, "u_View"),
-          Projection(shader, "u_Projection")
+    Uniforms(Gfx::OpenGL::OpenGLProgram &program) noexcept
+        : Texture("u_Texture", program.GetHandle(), program.GetNativeHandle()),
+          Transform("u_Transform", program.GetHandle(), program.GetNativeHandle()),
+          View("u_View", program.GetHandle(), program.GetNativeHandle()),
+          Projection("u_Projection", program.GetHandle(), program.GetNativeHandle())
     {
     }
   };
