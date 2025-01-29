@@ -46,14 +46,10 @@ namespace Krys
       graphicsContext->CreateShader(Gfx::ShaderStage::Fragment, IO::ReadFileText("shaders/triangle.frag"));
 
     _shader = graphicsContext->CreateProgram(vertexShader, fragmentShader);
-
     _texture = _context->GetTextureManager()->LoadTexture("textures/wood-wall.jpg");
-    auto &glTexture =
-      static_cast<Gfx::OpenGL::OpenGLTexture &>(*_context->GetTextureManager()->GetTexture(_texture));
+    _material = _context->GetMaterialManager()->CreatePhongMaterial(_shader, _texture);
 
-    _uniforms = Uniforms(
-      static_cast<Gfx::OpenGL::OpenGLProgram &>(*_context->GetGraphicsContext()->GetProgram(_shader)));
-    _uniforms.Texture.SetValue(glTexture.GetNativeBindlessHandle());
+    _uniforms = Uniforms(*static_cast<Gfx::OpenGL::OpenGLProgram *>(graphicsContext->GetProgram(_shader)));
   }
 
   void KrystalEditor::OnShutdown() noexcept
@@ -70,12 +66,13 @@ namespace Krys
       RenderCommand command;
       command.Program = _shader;
       command.Mesh = _cubeMesh;
+      command.Material = _material;
       renderer->Submit(command);
     }
 
     auto ctx = _context->GetGraphicsContext();
     ctx->Clear(ClearBuffer::Colour | ClearBuffer::Depth);
-    renderer->Execute(ctx);
+    renderer->Execute();
   }
 
   void KrystalEditor::OnUpdate(float) noexcept

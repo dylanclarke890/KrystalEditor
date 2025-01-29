@@ -50,6 +50,7 @@ namespace Krys
     Gfx::MeshHandle _cubeMesh;
     Gfx::ProgramHandle _shader;
     Gfx::TextureHandle _texture;
+    Gfx::MaterialHandle _material;
     Uniforms _uniforms;
     Gfx::ArcballCamera _camera;
   };
