@@ -28,7 +28,7 @@ namespace Krys
   {
     _context->GetWindowManager()->GetCurrentWindow()->ShowCursor(true);
     // TODO: this doesn't seem to work
-    _context->GetWindowManager()->GetCurrentWindow()->LockCursor(true);
+    // _context->GetWindowManager()->GetCurrentWindow()->LockCursor(true);
 
     BindEvents();
 
@@ -41,13 +41,16 @@ namespace Krys
     }
 
     auto vertexShader =
-      graphicsContext->CreateShader(Gfx::ShaderStage::Vertex, IO::ReadFileText("shaders/triangle.vert"));
+      graphicsContext->CreateShader(Gfx::ShaderStage::Vertex, IO::ReadFileText("shaders/phong.vert"));
     auto fragmentShader =
-      graphicsContext->CreateShader(Gfx::ShaderStage::Fragment, IO::ReadFileText("shaders/triangle.frag"));
+      graphicsContext->CreateShader(Gfx::ShaderStage::Fragment, IO::ReadFileText("shaders/phong.frag"));
 
     _shader = graphicsContext->CreateProgram(vertexShader, fragmentShader);
     _texture = _context->GetTextureManager()->LoadTexture("textures/wood-wall.jpg");
-    _material = _context->GetMaterialManager()->CreatePhongMaterial(_shader, _texture);
+    _material = _context->GetMaterialManager()->CreateMaterial<Gfx::PhongMaterial>(_shader, _texture);
+
+    auto &material = *_context->GetMaterialManager()->GetMaterial<Gfx::PhongMaterial>(_material);
+    material.SetAmbientColour(Gfx::Colours::Lime);
 
     _uniforms = Uniforms(*static_cast<Gfx::OpenGL::OpenGLProgram *>(graphicsContext->GetProgram(_shader)));
   }
@@ -105,8 +108,8 @@ namespace Krys
 
   void KrystalEditor::BindEvents() noexcept
   {
-    auto eventManager = _context->GetEventManager();
-    eventManager->RegisterHandler<KeyboardEvent>(
+    auto* em = _context->GetEventManager();
+    em->RegisterHandler<KeyboardEvent>(
       [&](const KeyboardEvent &event)
       {
         Logger::Info("Key pressed: {0}", event.GetKey());
@@ -120,14 +123,14 @@ namespace Krys
         return false;
       });
 
-    eventManager->RegisterHandler<QuitEvent>(
+    em->RegisterHandler<QuitEvent>(
       [&](const QuitEvent &)
       {
         _running = false;
         return true;
       });
 
-    eventManager->RegisterHandler<ScrollWheelEvent>(
+    em->RegisterHandler<ScrollWheelEvent>(
       [&](const ScrollWheelEvent &event)
       {
         _camera.Zoom(event.Delta());
