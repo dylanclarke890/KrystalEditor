@@ -15,7 +15,6 @@ namespace Krys
 {
   struct Uniforms final
   {
-    Gfx::OpenGL::OpenGLUniform<uint64> Texture;
     Gfx::OpenGL::OpenGLUniform<Mat4> Transform;
     Gfx::OpenGL::OpenGLUniform<Mat4> View;
     Gfx::OpenGL::OpenGLUniform<Mat4> Projection;
@@ -23,8 +22,7 @@ namespace Krys
     Uniforms() noexcept = default;
 
     Uniforms(Gfx::OpenGL::OpenGLProgram &program) noexcept
-        : Texture("u_Texture", program.GetHandle(), program.GetNativeHandle()),
-          Transform("u_Transform", program.GetHandle(), program.GetNativeHandle()),
+        : Transform("u_Transform", program.GetHandle(), program.GetNativeHandle()),
           View("u_View", program.GetHandle(), program.GetNativeHandle()),
           Projection("u_Projection", program.GetHandle(), program.GetNativeHandle())
     {

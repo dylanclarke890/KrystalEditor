@@ -49,8 +49,8 @@ namespace Krys
     _texture = _context->GetTextureManager()->LoadTexture("textures/wood-wall.jpg");
     _material = _context->GetMaterialManager()->CreateMaterial<Gfx::PhongMaterial>(_shader, _texture);
 
-    auto &material = *_context->GetMaterialManager()->GetMaterial<Gfx::PhongMaterial>(_material);
-    material.SetAmbientColour(Gfx::Colours::Lime);
+    // auto &material = *_context->GetMaterialManager()->GetMaterial<Gfx::PhongMaterial>(_material);
+    // material.SetAmbientColour(Gfx::Colours::Lime);
 
     _uniforms = Uniforms(*static_cast<Gfx::OpenGL::OpenGLProgram *>(graphicsContext->GetProgram(_shader)));
   }
