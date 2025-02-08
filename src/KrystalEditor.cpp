@@ -7,6 +7,9 @@
 #include <Events/QuitEvent.hpp>
 #include <Graphics/Colours.hpp>
 #include <Graphics/OpenGL/OpenGLTexture.hpp>
+#include <Graphics/Scene/MaterialNode.hpp>
+#include <Graphics/Scene/MeshNode.hpp>
+#include <Graphics/Transform.hpp>
 #include <IO/Images.hpp>
 #include <IO/IO.hpp>
 #include <IO/Logger.hpp>
@@ -19,8 +22,8 @@
 namespace Krys
 {
   KrystalEditor::KrystalEditor(Unique<ApplicationContext> context) noexcept
-      : Application(std::move(context)), _game(CreateUnique<Pong>(_context.get())), _cubeMesh(), _shader(),
-        _texture(), _camera(Gfx::CameraType::Perspective, 1'920, 1'080, 100, Vec3(0.0f), 10.0f)
+      : Application(std::move(context)), _game(CreateUnique<Pong>(_context.get())),
+        _camera(Gfx::CameraType::Perspective, 1'920, 1'080, 100, Vec3(0.0f), 10.0f)
   {
   }
 
@@ -35,24 +38,38 @@ namespace Krys
     auto graphicsContext = _context->GetGraphicsContext();
     graphicsContext->SetClearColour(Gfx::Colours::Black);
 
-    {
-      using namespace Gfx;
-      _cubeMesh = _context->GetMeshManager()->CreateCube(Colours::White);
-    }
-
+    auto mesh = _context->GetMeshManager()->CreateCube(Gfx::Colours::White);
     auto vertexShader =
       graphicsContext->CreateShader(Gfx::ShaderStage::Vertex, IO::ReadFileText("shaders/phong.vert"));
     auto fragmentShader =
       graphicsContext->CreateShader(Gfx::ShaderStage::Fragment, IO::ReadFileText("shaders/phong.frag"));
 
-    _shader = graphicsContext->CreateProgram(vertexShader, fragmentShader);
-    _texture = _context->GetTextureManager()->LoadTexture("textures/wood-wall.jpg");
-    _material = _context->GetMaterialManager()->CreateMaterial<Gfx::PhongMaterial>(_shader, _texture);
+    auto shader = graphicsContext->CreateProgram(vertexShader, fragmentShader);
+    auto texture = _context->GetTextureManager()->LoadTexture("textures/wood-wall.jpg");
+    auto material = _context->GetMaterialManager()->CreateMaterial<Gfx::PhongMaterial>(shader, texture);
 
     // auto &material = *_context->GetMaterialManager()->GetMaterial<Gfx::PhongMaterial>(_material);
     // material.SetAmbientColour(Gfx::Colours::Lime);
 
-    _uniforms = Uniforms(*static_cast<Gfx::OpenGL::OpenGLProgram *>(graphicsContext->GetProgram(_shader)));
+    auto *sm = _context->GetSceneGraphManager();
+    sm->CreateScene("main");
+
+    auto *root = sm->GetScene("main")->GetRoot();
+
+    {
+      auto meshNode = CreateRef<Gfx::MeshNode>(mesh, Gfx::Transform());
+      meshNode->AddChild(CreateRef<Gfx::MaterialNode>(material));
+      root->AddChild(meshNode);
+    }
+
+    {
+      auto transform = Gfx::Transform {};
+      transform.SetTranslation({1.0f, 0.5f, 0.5f});
+
+      auto meshNode = CreateRef<Gfx::MeshNode>(mesh, transform);
+      meshNode->AddChild(CreateRef<Gfx::MaterialNode>(material));
+      root->AddChild(meshNode);
+    }
   }
 
   void KrystalEditor::OnShutdown() noexcept
@@ -63,25 +80,16 @@ namespace Krys
   {
     using namespace Gfx;
 
+    auto ctx = _context->GetGraphicsContext();
     auto renderer = _context->GetRenderer();
 
-    {
-      RenderCommand command;
-      command.Program = _shader;
-      command.Mesh = _cubeMesh;
-      command.Material = _material;
-      renderer->Submit(command);
-    }
-
-    auto ctx = _context->GetGraphicsContext();
     ctx->Clear(ClearBuffer::Colour | ClearBuffer::Depth);
-    renderer->Execute();
+    renderer->Render(_context->GetSceneGraphManager()->GetScene("main"), _camera);
   }
 
   void KrystalEditor::OnUpdate(float) noexcept
   {
     auto *input = _context->GetInputManager();
-
     if (input->GetMouse().IsButtonPressed(MouseButton::LEFT))
     {
       auto &mouse = input->GetMouse();
@@ -92,14 +100,6 @@ namespace Krys
       auto &mouse = input->GetMouse();
       _camera.OnMouseDrag({mouse.GetClientX(), mouse.GetClientY()});
     }
-
-    Mat4 trans = Mat4(1.0f);
-    // trans = MTL::Rotate(trans, static_cast<float>(Platform::GetTime()), Vec3(0.0, 0.0, 1.0));
-    // trans = MTL::Scale(trans, Vec3(0.5, 0.5, 0.5));
-
-    _uniforms.Transform.SetValue(trans);
-    _uniforms.View.SetValue(_camera.GetView());
-    _uniforms.Projection.SetValue(_camera.GetProjection());
   }
 
   void KrystalEditor::OnFixedUpdate(float) noexcept
@@ -108,7 +108,7 @@ namespace Krys
 
   void KrystalEditor::BindEvents() noexcept
   {
-    auto* em = _context->GetEventManager();
+    auto *em = _context->GetEventManager();
     em->RegisterHandler<KeyboardEvent>(
       [&](const KeyboardEvent &event)
       {

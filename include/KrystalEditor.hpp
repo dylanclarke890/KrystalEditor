@@ -13,22 +13,6 @@
 
 namespace Krys
 {
-  struct Uniforms final
-  {
-    Gfx::OpenGL::OpenGLUniform<Mat4> Transform;
-    Gfx::OpenGL::OpenGLUniform<Mat4> View;
-    Gfx::OpenGL::OpenGLUniform<Mat4> Projection;
-
-    Uniforms() noexcept = default;
-
-    Uniforms(Gfx::OpenGL::OpenGLProgram &program) noexcept
-        : Transform("u_Transform", program.GetHandle(), program.GetNativeHandle()),
-          View("u_View", program.GetHandle(), program.GetNativeHandle()),
-          Projection("u_Projection", program.GetHandle(), program.GetNativeHandle())
-    {
-    }
-  };
-
   class KrystalEditor : public Application
   {
   public:
@@ -45,11 +29,6 @@ namespace Krys
     void BindEvents() noexcept;
 
     Unique<Game> _game;
-    Gfx::MeshHandle _cubeMesh;
-    Gfx::ProgramHandle _shader;
-    Gfx::TextureHandle _texture;
-    Gfx::MaterialHandle _material;
-    Uniforms _uniforms;
     Gfx::ArcballCamera _camera;
   };
 }
