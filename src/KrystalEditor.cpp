@@ -6,6 +6,7 @@
 #include <Events/Input/ScrollWheelEvent.hpp>
 #include <Events/QuitEvent.hpp>
 #include <Graphics/Colours.hpp>
+#include <Graphics/Lights/DirectionalLight.hpp>
 #include <Graphics/Lights/PointLight.hpp>
 #include <Graphics/Materials/PhongMaterials.hpp>
 #include <Graphics/OpenGL/OpenGLTexture.hpp>
@@ -24,6 +25,8 @@
 
 namespace Krys
 {
+  static Gfx::LightHandle directionalLightHandle;
+
   KrystalEditor::KrystalEditor(Unique<ApplicationContext> context) noexcept
       : Application(std::move(context)), _game(CreateUnique<Pong>(_context.get())),
         _camera(Gfx::CameraType::Perspective, 1'920, 1'080, 100, Vec3(0.0f), 10.0f)
@@ -67,7 +70,7 @@ namespace Krys
 
       transform.SetTranslation({0.0f, 0.0f, -2.0f});
       auto meshNodes2 = CreateRef<Gfx::MeshNode>(mesh, transform);
-      materialHandle = mm->CreatePhongMaterial(Gfx::PhongMaterials::Silver);
+      materialHandle = mm->CreatePhongMaterial(Gfx::PhongMaterials::WhitePlastic);
       // material = mm->GetMaterial<Gfx::PhongMaterial>(materialHandle);
       // material->SetEmissionTexture(tm->LoadTexture("textures/matrix.jpg"));
       meshNodes2->AddChild(CreateRef<Gfx::MaterialNode>(materialHandle));
@@ -76,14 +79,15 @@ namespace Krys
 
     {
       auto *lm = _context->GetLightManager();
-      root->AddChild(CreateRef<Gfx::LightNode>(
-        lm->CreateLight<Gfx::PointLight>(Gfx::Colour {1.0f, 0.0f, 0.0f}, Vec3 {-1.2f, -2.5f, 2.0f})));
+      directionalLightHandle =
+        lm->CreateLight<Gfx::DirectionalLight>(Gfx::Colour {1.f, 1.f, 1.f}, Vec3 {0.0f, 1.0f, 0.0f});
+      root->AddChild(CreateRef<Gfx::LightNode>(directionalLightHandle));
 
-      root->AddChild(CreateRef<Gfx::LightNode>(
-        lm->CreateLight<Gfx::PointLight>(Gfx::Colour {0.0f, 0.0f, 1.0f}, Vec3 {1.2f, 2.5f, -2.0f})));
+      // root->AddChild(CreateRef<Gfx::LightNode>(
+      //   lm->CreateLight<Gfx::PointLight>(Gfx::Colour {0.0f, 0.0f, 1.0f}, Vec3 {1.2f, 2.5f, -2.0f})));
 
-      root->AddChild(CreateRef<Gfx::LightNode>(
-        lm->CreateLight<Gfx::PointLight>(Gfx::Colour {0.0f, 1.0f, 0.0f}, Vec3 {1.2f, -2.5f, 2.0f})));
+      // root->AddChild(CreateRef<Gfx::LightNode>(
+      //   lm->CreateLight<Gfx::PointLight>(Gfx::Colour {0.0f, 1.0f, 0.0f}, Vec3 {1.2f, -2.5f, 2.0f})));
     }
   }
 
@@ -99,6 +103,10 @@ namespace Krys
     auto renderer = _context->GetRenderer();
 
     ctx->Clear(ClearBuffer::Colour | ClearBuffer::Depth);
+
+    auto &light = *_context->GetLightManager()->GetLight<Gfx::DirectionalLight>(directionalLightHandle);
+    light.SetDirection(_camera.GetForward());
+
     renderer->Render(_context->GetSceneGraphManager()->GetScene("main"), _camera);
   }
 
