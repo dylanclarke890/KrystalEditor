@@ -6,7 +6,10 @@
 #include <Events/Input/ScrollWheelEvent.hpp>
 #include <Events/QuitEvent.hpp>
 #include <Graphics/Colours.hpp>
+#include <Graphics/Lights/PointLight.hpp>
+#include <Graphics/Materials/PhongMaterials.hpp>
 #include <Graphics/OpenGL/OpenGLTexture.hpp>
+#include <Graphics/Scene/LightNode.hpp>
 #include <Graphics/Scene/MaterialNode.hpp>
 #include <Graphics/Scene/MeshNode.hpp>
 #include <Graphics/Transform.hpp>
@@ -39,17 +42,6 @@ namespace Krys
     graphicsContext->SetClearColour(Gfx::Colours::Black);
 
     auto mesh = _context->GetMeshManager()->CreateCube(Gfx::Colours::White);
-    auto vertexShader =
-      graphicsContext->CreateShader(Gfx::ShaderStage::Vertex, IO::ReadFileText("shaders/phong.vert"));
-    auto fragmentShader =
-      graphicsContext->CreateShader(Gfx::ShaderStage::Fragment, IO::ReadFileText("shaders/phong.frag"));
-
-    auto shader = graphicsContext->CreateProgram(vertexShader, fragmentShader);
-    auto texture = _context->GetTextureManager()->LoadTexture("textures/wood-wall.jpg");
-    auto material = _context->GetMaterialManager()->CreateMaterial<Gfx::PhongMaterial>(shader, texture);
-
-    // auto &material = *_context->GetMaterialManager()->GetMaterial<Gfx::PhongMaterial>(_material);
-    // material.SetAmbientColour(Gfx::Colours::Lime);
 
     auto *sm = _context->GetSceneGraphManager();
     sm->CreateScene("main");
@@ -57,18 +49,41 @@ namespace Krys
     auto *root = sm->GetScene("main")->GetRoot();
 
     {
-      auto meshNode = CreateRef<Gfx::MeshNode>(mesh, Gfx::Transform());
-      meshNode->AddChild(CreateRef<Gfx::MaterialNode>(material));
+      auto *mm = _context->GetMaterialManager();
+      auto *tm = _context->GetTextureManager();
+
+      auto texture = tm->LoadTexture("textures/wood-crate.png");
+      auto materialHandle = mm->CreatePhongMaterial(texture);
+      auto material = mm->GetMaterial<Gfx::PhongMaterial>(materialHandle);
+      material->SetSpecularTexture(tm->LoadTexture("textures/wood-crate-specular.png"));
+      // material->SetEmissionTexture(tm->LoadTexture("textures/matrix.jpg"));
+
+      auto transform = Gfx::Transform {};
+      transform.SetTranslation({0.0f, 0.0f, 0.0f});
+
+      auto meshNode = CreateRef<Gfx::MeshNode>(mesh, transform);
+      meshNode->AddChild(CreateRef<Gfx::MaterialNode>(materialHandle));
       root->AddChild(meshNode);
+
+      transform.SetTranslation({0.0f, 0.0f, -2.0f});
+      auto meshNodes2 = CreateRef<Gfx::MeshNode>(mesh, transform);
+      materialHandle = mm->CreatePhongMaterial(Gfx::PhongMaterials::Silver);
+      // material = mm->GetMaterial<Gfx::PhongMaterial>(materialHandle);
+      // material->SetEmissionTexture(tm->LoadTexture("textures/matrix.jpg"));
+      meshNodes2->AddChild(CreateRef<Gfx::MaterialNode>(materialHandle));
+      root->AddChild(meshNodes2);
     }
 
     {
-      auto transform = Gfx::Transform {};
-      transform.SetTranslation({1.0f, 0.5f, 0.5f});
+      auto *lm = _context->GetLightManager();
+      root->AddChild(CreateRef<Gfx::LightNode>(
+        lm->CreateLight<Gfx::PointLight>(Gfx::Colour {1.0f, 0.0f, 0.0f}, Vec3 {-1.2f, -2.5f, 2.0f})));
 
-      auto meshNode = CreateRef<Gfx::MeshNode>(mesh, transform);
-      meshNode->AddChild(CreateRef<Gfx::MaterialNode>(material));
-      root->AddChild(meshNode);
+      root->AddChild(CreateRef<Gfx::LightNode>(
+        lm->CreateLight<Gfx::PointLight>(Gfx::Colour {0.0f, 0.0f, 1.0f}, Vec3 {1.2f, 2.5f, -2.0f})));
+
+      root->AddChild(CreateRef<Gfx::LightNode>(
+        lm->CreateLight<Gfx::PointLight>(Gfx::Colour {0.0f, 1.0f, 0.0f}, Vec3 {1.2f, -2.5f, 2.0f})));
     }
   }
 
