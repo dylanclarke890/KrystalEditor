@@ -21,6 +21,7 @@
 #include <MTL/Common/Convert.hpp>
 #include <MTL/Matrices/Ext/Transformations.hpp>
 #include <MTL/Vectors/Ext/Format.hpp>
+#include <rapidobj.hpp>
 
 #include "Pong.hpp"
 
@@ -76,6 +77,22 @@ namespace Krys
       // material->SetEmissionTexture(tm->LoadTexture("textures/matrix.jpg"));
       meshNodes2->AddChild(CreateRef<Gfx::MaterialNode>(materialHandle));
       root->AddChild(meshNodes2);
+    }
+
+    {
+      auto result = rapidobj::ParseFile("models/teapot.obj");
+      KRYS_ASSERT(!result.error, "Failed to parse OBJ file: code: {0}, line: {1}, line_num {2}",
+                  result.error.code.message(), result.error.line, result.error.line_num);
+
+      rapidobj::Triangulate(result);
+      KRYS_ASSERT(!result.error, "Failed to triangulate OBJ file: code: {0}, line: {1}, line_num {2}",
+                  result.error.code.message(), result.error.line, result.error.line_num);
+
+      auto num_triangles = size_t();
+      for (const auto &shape : result.shapes)
+        num_triangles += shape.mesh.num_face_vertices.size();
+
+      Logger::Info("Shapes: {0}, Triangles: {1}", result.shapes.size(), num_triangles);
     }
 
     {
