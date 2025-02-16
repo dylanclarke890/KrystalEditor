@@ -21,7 +21,6 @@
 #include <MTL/Common/Convert.hpp>
 #include <MTL/Matrices/Ext/Transformations.hpp>
 #include <MTL/Vectors/Ext/Format.hpp>
-#include <rapidobj.hpp>
 
 #include "Pong.hpp"
 
@@ -44,55 +43,26 @@ namespace Krys
     BindEvents();
 
     auto graphicsContext = _context->GetGraphicsContext();
-    graphicsContext->SetClearColour(Gfx::Colours::Black);
+    graphicsContext->SetClearColour(Gfx::Colours::Gray25);
 
-    auto mesh = _context->GetMeshManager()->CreateCube();
+    // auto mesh = _context->GetMeshManager()->CreateCube();
 
     auto *sm = _context->GetSceneGraphManager();
     sm->CreateScene("main");
 
     auto *root = sm->GetScene("main")->GetRoot();
 
+    auto teapotLoaderFlags = Gfx::ModelLoaderFlags::GenerateFaceNormals | Gfx::ModelLoaderFlags::Triangulate
+                             | Gfx::ModelLoaderFlags::DeduplicateVertices;
+    auto model =
+      _context->GetModelManager()->LoadModel("models/dragon/dragon.obj", teapotLoaderFlags).value();
     {
-      auto *mm = _context->GetMaterialManager();
-      auto *tm = _context->GetTextureManager();
-
-      auto texture = tm->LoadTexture("textures/wood-crate.png");
-      auto materialHandle = mm->CreatePhongMaterial(texture);
-      auto material = mm->GetMaterial<Gfx::PhongMaterial>(materialHandle);
-      material->SetSpecularTexture(tm->LoadTexture("textures/wood-crate-specular.png"));
-      // material->SetEmissionTexture(tm->LoadTexture("textures/matrix.jpg"));
-
       auto transform = Gfx::Transform {};
       transform.SetTranslation({0.0f, 0.0f, 0.0f});
 
-      auto meshNode = CreateRef<Gfx::MeshNode>(mesh, transform);
-      meshNode->AddChild(CreateRef<Gfx::MaterialNode>(materialHandle));
+      auto meshNode = CreateRef<Gfx::MeshNode>(model.Renderables[0].Mesh, transform);
+      meshNode->AddChild(CreateRef<Gfx::MaterialNode>(model.Renderables[0].Material));
       root->AddChild(meshNode);
-
-      transform.SetTranslation({0.0f, 0.0f, -2.0f});
-      auto meshNodes2 = CreateRef<Gfx::MeshNode>(mesh, transform);
-      materialHandle = mm->CreatePhongMaterial(Gfx::PhongMaterials::Silver);
-      // material = mm->GetMaterial<Gfx::PhongMaterial>(materialHandle);
-      // material->SetEmissionTexture(tm->LoadTexture("textures/matrix.jpg"));
-      meshNodes2->AddChild(CreateRef<Gfx::MaterialNode>(materialHandle));
-      root->AddChild(meshNodes2);
-    }
-
-    {
-      auto result = rapidobj::ParseFile("models/teapot.obj");
-      KRYS_ASSERT(!result.error, "Failed to parse OBJ file: code: {0}, line: {1}, line_num {2}",
-                  result.error.code.message(), result.error.line, result.error.line_num);
-
-      rapidobj::Triangulate(result);
-      KRYS_ASSERT(!result.error, "Failed to triangulate OBJ file: code: {0}, line: {1}, line_num {2}",
-                  result.error.code.message(), result.error.line, result.error.line_num);
-
-      auto num_triangles = size_t();
-      for (const auto &shape : result.shapes)
-        num_triangles += shape.mesh.num_face_vertices.size();
-
-      Logger::Info("Shapes: {0}, Triangles: {1}", result.shapes.size(), num_triangles);
     }
 
     {
@@ -101,11 +71,11 @@ namespace Krys
                                                         Vec3 {0.f, -1.f, 0.f});
       root->AddChild(CreateRef<Gfx::LightNode>(spotLightHandle));
 
-      // root->AddChild(CreateRef<Gfx::LightNode>(
-      //   lm->CreateLight<Gfx::PointLight>(Gfx::Colour {1.0f, 1.0f, 1.0f}, Vec3 {1.2f, 2.5f, -2.0f})));
+      root->AddChild(CreateRef<Gfx::LightNode>(
+        lm->CreateLight<Gfx::PointLight>(Gfx::Colour {1.0f, 1.0f, 1.0f}, Vec3 {1.2f, 2.5f, -2.0f})));
 
-      // root->AddChild(CreateRef<Gfx::LightNode>(
-      //   lm->CreateLight<Gfx::PointLight>(Gfx::Colour {0.0f, 1.0f, 0.0f}, Vec3 {1.2f, -2.5f, 2.0f})));
+      root->AddChild(CreateRef<Gfx::LightNode>(
+        lm->CreateLight<Gfx::PointLight>(Gfx::Colour {1.0f, 1.0f, 1.0f}, Vec3 {1.2f, -2.5f, 2.0f})));
     }
   }
 
