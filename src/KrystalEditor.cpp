@@ -30,7 +30,7 @@ namespace Krys
 
   KrystalEditor::KrystalEditor(Unique<ApplicationContext> context) noexcept
       : Application(std::move(context)), _game(CreateUnique<Pong>(_context.get())),
-        _camera(Gfx::CameraType::Perspective, 1'920, 1'080, 100, Vec3(0.0f), 10.0f)
+        _camera(Gfx::CameraType::Perspective, 1'920, 1'080, 100, Vec3(0.f, 0.f, 0.f), 10.0f)
   {
   }
 
@@ -52,17 +52,21 @@ namespace Krys
 
     auto *root = sm->GetScene("main")->GetRoot();
 
-    auto teapotLoaderFlags = Gfx::ModelLoaderFlags::GenerateFaceNormals | Gfx::ModelLoaderFlags::Triangulate
-                             | Gfx::ModelLoaderFlags::DeduplicateVertices;
+    auto teapotLoaderFlags = Gfx::ModelLoaderFlags::GenerateNormals | Gfx::ModelLoaderFlags::Triangulate
+                             | Gfx::ModelLoaderFlags::RemoveDuplicateVertices | Gfx::ModelLoaderFlags::FlipUVs
+                             | Gfx::ModelLoaderFlags::FlipWindingOrder;
     auto model =
-      _context->GetModelManager()->LoadModel("models/dragon/dragon.obj", teapotLoaderFlags).value();
+      _context->GetModelManager()->LoadModel("models/backpack/backpack.obj", teapotLoaderFlags).value();
     {
       auto transform = Gfx::Transform {};
       transform.SetTranslation({0.0f, 0.0f, 0.0f});
 
-      auto meshNode = CreateRef<Gfx::MeshNode>(model.Renderables[0].Mesh, transform);
-      meshNode->AddChild(CreateRef<Gfx::MaterialNode>(model.Renderables[0].Material));
-      root->AddChild(meshNode);
+      for (const auto &renderable : model.Renderables)
+      {
+        auto meshNode = CreateRef<Gfx::MeshNode>(renderable.Mesh, transform);
+        meshNode->AddChild(CreateRef<Gfx::MaterialNode>(renderable.Material));
+        root->AddChild(meshNode);
+      }
     }
 
     {
