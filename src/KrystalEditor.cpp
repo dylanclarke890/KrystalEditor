@@ -11,6 +11,7 @@
 #include <Graphics/Lights/SpotLight.hpp>
 #include <Graphics/Materials/PhongMaterials.hpp>
 #include <Graphics/OpenGL/OpenGLTexture.hpp>
+#include <Graphics/RenderPass.hpp>
 #include <Graphics/Scene/LightNode.hpp>
 #include <Graphics/Scene/MaterialNode.hpp>
 #include <Graphics/Scene/MeshNode.hpp>
@@ -36,51 +37,13 @@ namespace Krys
 
   void KrystalEditor::OnInit() noexcept
   {
-    _context->GetWindowManager()->GetCurrentWindow()->ShowCursor(true);
-    // TODO: this doesn't seem to work
-    // _context->GetWindowManager()->GetCurrentWindow()->LockCursor(true);
+    auto *window = _context->GetWindowManager()->GetCurrentWindow();
+    window->ShowCursor(true);
+    window->LockCursor(true); // TODO: this doesn't seem to work
 
     BindEvents();
-
-    auto graphicsContext = _context->GetGraphicsContext();
-    graphicsContext->SetClearColour(Gfx::Colours::Gray25);
-
-    // auto mesh = _context->GetMeshManager()->CreateCube();
-
-    auto *sm = _context->GetSceneGraphManager();
-    sm->CreateScene("main");
-
-    auto *root = sm->GetScene("main")->GetRoot();
-
-    auto teapotLoaderFlags = Gfx::ModelLoaderFlags::GenerateNormals | Gfx::ModelLoaderFlags::Triangulate
-                             | Gfx::ModelLoaderFlags::RemoveDuplicateVertices | Gfx::ModelLoaderFlags::FlipUVs
-                             | Gfx::ModelLoaderFlags::FlipWindingOrder;
-    auto model =
-      _context->GetModelManager()->LoadModel("models/backpack/backpack.obj", teapotLoaderFlags).value();
-    {
-      auto transform = Gfx::Transform {};
-      transform.SetTranslation({0.0f, 0.0f, 0.0f});
-
-      for (const auto &renderable : model.Renderables)
-      {
-        auto meshNode = CreateRef<Gfx::MeshNode>(renderable.Mesh, transform);
-        meshNode->AddChild(CreateRef<Gfx::MaterialNode>(renderable.Material));
-        root->AddChild(meshNode);
-      }
-    }
-
-    {
-      auto *lm = _context->GetLightManager();
-      spotLightHandle = lm->CreateLight<Gfx::SpotLight>(Gfx::Colour {1.f, 1.f, 1.f}, Vec3 {0.f, 1.f, 0.f},
-                                                        Vec3 {0.f, -1.f, 0.f});
-      root->AddChild(CreateRef<Gfx::LightNode>(spotLightHandle));
-
-      root->AddChild(CreateRef<Gfx::LightNode>(
-        lm->CreateLight<Gfx::PointLight>(Gfx::Colour {1.0f, 1.0f, 1.0f}, Vec3 {1.2f, 2.5f, -2.0f})));
-
-      root->AddChild(CreateRef<Gfx::LightNode>(
-        lm->CreateLight<Gfx::PointLight>(Gfx::Colour {1.0f, 1.0f, 1.0f}, Vec3 {1.2f, -2.5f, 2.0f})));
-    }
+    SetupScene();
+    SetupPipeline();
   }
 
   void KrystalEditor::OnShutdown() noexcept
@@ -91,16 +54,11 @@ namespace Krys
   {
     using namespace Gfx;
 
-    auto ctx = _context->GetGraphicsContext();
-    auto renderer = _context->GetRenderer();
-
-    ctx->Clear(ClearBuffer::Colour | ClearBuffer::Depth);
-
     auto &light = *_context->GetLightManager()->GetLight<Gfx::SpotLight>(spotLightHandle);
     light.SetDirection(_camera.GetForward());
     light.SetPosition(_camera.GetPosition());
 
-    renderer->Render(_context->GetSceneGraphManager()->GetScene("main"), _camera);
+    _context->GetRenderer()->Render();
   }
 
   void KrystalEditor::OnUpdate(float) noexcept
@@ -152,5 +110,62 @@ namespace Krys
         _camera.Zoom(event.Delta());
         return false;
       });
+  }
+
+  void KrystalEditor::SetupScene() noexcept
+  {
+    auto *sm = _context->GetSceneGraphManager();
+    sm->CreateScene("main");
+
+    auto *root = sm->GetScene("main")->GetRoot();
+
+    auto teapotLoaderFlags = Gfx::ModelLoaderFlags::Triangulate
+                             | Gfx::ModelLoaderFlags::RemoveDuplicateVertices | Gfx::ModelLoaderFlags::FlipUVs
+                             | Gfx::ModelLoaderFlags::FlipWindingOrder;
+    auto model =
+      _context->GetModelManager()->LoadModel("models/backpack/backpack.obj", teapotLoaderFlags).value();
+    {
+      auto transform = Gfx::Transform {};
+      transform.SetTranslation({0.0f, 0.0f, 0.0f});
+
+      for (const auto &renderable : model.Renderables)
+      {
+        auto meshNode = CreateRef<Gfx::MeshNode>(renderable.Mesh, transform);
+        meshNode->AddChild(CreateRef<Gfx::MaterialNode>(renderable.Material));
+        root->AddChild(meshNode);
+      }
+    }
+
+    {
+      auto *lm = _context->GetLightManager();
+      spotLightHandle = lm->CreateLight<Gfx::SpotLight>(Gfx::Colour {1.f, 1.f, 1.f}, Vec3 {0.f, 1.f, 0.f},
+                                                        Vec3 {0.f, -1.f, 0.f});
+      root->AddChild(CreateRef<Gfx::LightNode>(spotLightHandle));
+
+      root->AddChild(CreateRef<Gfx::LightNode>(
+        lm->CreateLight<Gfx::PointLight>(Gfx::Colour {1.0f, 1.0f, 1.0f}, Vec3 {1.2f, 2.5f, -2.0f})));
+
+      root->AddChild(CreateRef<Gfx::LightNode>(
+        lm->CreateLight<Gfx::PointLight>(Gfx::Colour {1.0f, 1.0f, 1.0f}, Vec3 {1.2f, -2.5f, 2.0f})));
+    }
+  }
+
+  void KrystalEditor::SetupPipeline() noexcept
+  {
+    using namespace Gfx;
+
+    auto mainScene = _context->GetSceneGraphManager()->GetScene("main")->GetHandle();
+    // auto *rtm = _context->GetRenderTargetManager();
+
+    {
+      RenderPass pass;
+      pass.SceneGraph = mainScene;
+      pass.Camera = &_camera;
+      pass.ClearValues.Color = Colour::ToVec4(Colours::Gray25);
+
+      _pipeline.AddPass(pass);
+    }
+
+    _context->GetRenderer()->SetRenderPipeline(_pipeline);
   }
 }

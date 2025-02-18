@@ -6,7 +6,7 @@
 #include <Graphics/Handles.hpp>
 #include <Graphics/OpenGL/OpenGLProgram.hpp>
 #include <Graphics/OpenGL/OpenGLUniform.hpp>
-
+#include <Graphics/RenderPipeline.hpp>
 #include <MTL/Matrices/Mat4x4.hpp>
 
 #include "Game.hpp"
@@ -28,7 +28,12 @@ namespace Krys
   private:
     void BindEvents() noexcept;
 
+    void SetupScene() noexcept;
+
+    void SetupPipeline() noexcept;
+
     Unique<Game> _game;
     Gfx::ArcballCamera _camera;
+    Gfx::RenderPipeline _pipeline;
   };
 }
