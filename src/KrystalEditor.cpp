@@ -157,11 +157,22 @@ namespace Krys
     auto mainScene = _context->GetSceneGraphManager()->GetScene("main")->GetHandle();
     // auto *rtm = _context->GetRenderTargetManager();
 
+    // {
+    //   RenderPass pass;
+    //   pass.SceneGraph = mainScene;
+    //   pass.Camera = &_camera;
+    //   pass.ClearValues.Color = Colour::ToVec4(Colours::Gray25);
+    //   pass.ColourAttachments.emplace_back(
+    //     RenderTargetAttachment {rtm->CreateRenderTarget(RenderTargetType::Colour)});
+    //   pass.DepthAttachment = RenderTargetAttachment {rtm->CreateRenderTarget(RenderTargetType::Depth)};
+
+    // _pipeline.AddPass(pass);
+    // }
+
     {
       RenderPass pass;
       pass.SceneGraph = mainScene;
       pass.Camera = &_camera;
-      pass.ClearValues.Color = Colour::ToVec4(Colours::Gray25);
 
       _pipeline.AddPass(pass);
     }
