@@ -16,6 +16,8 @@
 #include <Graphics/Scene/MaterialNode.hpp>
 #include <Graphics/Scene/MeshNode.hpp>
 #include <Graphics/Transform.hpp>
+#include <IO/Image/PAM.hpp>
+#include <IO/Image/PNM.hpp>
 #include <IO/Images.hpp>
 #include <IO/IO.hpp>
 #include <IO/Logger.hpp>
@@ -40,6 +42,14 @@ namespace Krys
     auto *window = _context->GetWindowManager()->GetCurrentWindow();
     window->ShowCursor(true);
     window->LockCursor(true); // TODO: this doesn't seem to work
+
+    IO::PNM pnm;
+    auto p1 = pnm.Load("test-images/PNM/p1.pbm");
+    auto p2 = pnm.Load("test-images/PNM/p2.pgm");
+    auto p4 = pnm.Load("test-images/PNM/p4.pbm");
+
+    IO::PAM pam;
+    auto p7 = pam.Load("test-images/test.pam");
 
     BindEvents();
     SetupScene();
