@@ -16,8 +16,7 @@
 #include <Graphics/Scene/MaterialNode.hpp>
 #include <Graphics/Scene/MeshNode.hpp>
 #include <Graphics/Transform.hpp>
-#include <IO/Image/PAM.hpp>
-#include <IO/Image/PNM.hpp>
+#include <IO/Image/BMP.hpp>
 #include <IO/Images.hpp>
 #include <IO/IO.hpp>
 #include <IO/Logger.hpp>
@@ -43,13 +42,8 @@ namespace Krys
     window->ShowCursor(true);
     window->LockCursor(true); // TODO: this doesn't seem to work
 
-    IO::PNM pnm;
-    auto p1 = pnm.Load("test-images/PNM/p1.pbm");
-    auto p2 = pnm.Load("test-images/PNM/p2.pgm");
-    auto p4 = pnm.Load("test-images/PNM/p4.pbm");
-
-    IO::PAM pam;
-    auto p7 = pam.Load("test-images/test.pam");
+    IO::BMP bmp;
+    auto img = bmp.Load("test-images/BMP/valid/1bpp-1x1.bmp");
 
     BindEvents();
     SetupScene();
@@ -129,21 +123,38 @@ namespace Krys
 
     auto *root = sm->GetScene("main")->GetRoot();
 
-    auto teapotLoaderFlags = Gfx::ModelLoaderFlags::Triangulate
-                             | Gfx::ModelLoaderFlags::RemoveDuplicateVertices | Gfx::ModelLoaderFlags::FlipUVs
-                             | Gfx::ModelLoaderFlags::FlipWindingOrder;
-    auto model =
-      _context->GetModelManager()->LoadModel("models/backpack/backpack.obj", teapotLoaderFlags).value();
+    // auto modelFlags = Gfx::ModelLoaderFlags::Triangulate | Gfx::ModelLoaderFlags::RemoveDuplicateVertices
+    //                   | Gfx::ModelLoaderFlags::FlipUVs | Gfx::ModelLoaderFlags::FlipWindingOrder;
+    // auto model = _context->GetModelManager()->LoadModel("models/backpack/backpack.obj",
+    // modelFlags).value();
+    // {
+    //   auto transform = Gfx::Transform {};
+    //   transform.SetTranslation({0.0f, 0.0f, 0.0f});
+
+    // for (const auto &renderable : model.Renderables)
+    // {
+    //   auto meshNode = CreateRef<Gfx::MeshNode>(renderable.Mesh, transform);
+    //   meshNode->AddChild(CreateRef<Gfx::MaterialNode>(renderable.Material));
+    //   root->AddChild(meshNode);
+    // }
+    // }
+
+    auto cubeMesh = _context->GetMeshManager()->CreateCube();
     {
       auto transform = Gfx::Transform {};
       transform.SetTranslation({0.0f, 0.0f, 0.0f});
 
-      for (const auto &renderable : model.Renderables)
-      {
-        auto meshNode = CreateRef<Gfx::MeshNode>(renderable.Mesh, transform);
-        meshNode->AddChild(CreateRef<Gfx::MaterialNode>(renderable.Material));
-        root->AddChild(meshNode);
-      }
+      auto meshNode = CreateRef<Gfx::MeshNode>(cubeMesh, transform);
+      Gfx::PhongMaterialDescriptor descriptor {};
+      descriptor.Ambient = Gfx::Colours::White;
+      descriptor.Diffuse = Gfx::Colours::White;
+      descriptor.Specular = Gfx::Colours::Black;
+      descriptor.Shininess = 32.0f;
+      descriptor.DiffuseMap =
+        _context->GetTextureManager()->LoadTexture("test-images/BMP/valid/1bpp-320x240-color.bmp");
+      meshNode->AddChild(
+        CreateRef<Gfx::MaterialNode>(_context->GetMaterialManager()->CreatePhongMaterial(descriptor)));
+      root->AddChild(meshNode);
     }
 
     {
@@ -183,6 +194,7 @@ namespace Krys
       RenderPass pass;
       pass.SceneGraph = mainScene;
       pass.Camera = &_camera;
+      pass.ClearValues.Color = Colour::ToVec4(Colours::Gray25);
 
       _pipeline.AddPass(pass);
     }
